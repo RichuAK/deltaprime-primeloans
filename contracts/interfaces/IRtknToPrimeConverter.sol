@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 
 interface IRtknToPrimeConverter {
     // Enums
     enum Phase { Phase1, Phase2 }
 
     // State variable getters
-    function rTKN() external view returns (IERC20);
+    function rTKN() external view returns (ERC20BurnableUpgradeable);
 
     function rRTKNMaxCap() external view returns (uint256);
 
@@ -49,4 +49,5 @@ interface IRtknToPrimeConverter {
     event UserProcessed(address indexed user, uint256 adjustedPledgedAmount, uint256 excessAmount);
     event Withdrawal(address indexed owner, uint256 amount);
     event MaxCapSet(uint256 prevMaxCap, uint256 newMaxCap);
+    event Burned(uint256 amount);
 }

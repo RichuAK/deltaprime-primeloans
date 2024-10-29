@@ -4,13 +4,14 @@ pragma solidity 0.8.17;
 import "../interfaces/IRtknToPrimeConverter.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract RtknToPrimeConverter is Initializable, IRtknToPrimeConverter, OwnableUpgradeable, ReentrancyGuardUpgradeable {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for ERC20BurnableUpgradeable;
 
-    IERC20 public rTKN;
+    ERC20BurnableUpgradeable public rTKN;
 
     uint256 public constant CONVERSION_RATIO = 0.631428571428571e18; // 0.884 / 1.4; scaled by 1e18 for precision
     uint256 public rRTKNMaxCap;
@@ -36,9 +37,9 @@ contract RtknToPrimeConverter is Initializable, IRtknToPrimeConverter, OwnableUp
         __Ownable_init();
         __ReentrancyGuard_init();
 
-        _transferOwnership(0x44AfCcF712E8A097a6727B48b57c75d7A85a9B0c);
+//        _transferOwnership(0x44AfCcF712E8A097a6727B48b57c75d7A85a9B0c);
 
-        rTKN = IERC20(_rTKNAddress);
+        rTKN = ERC20BurnableUpgradeable(_rTKNAddress);
         rRTKNMaxCap = _rRTKNMaxCap;
         currentPhase = Phase.Phase1;
     }
@@ -66,6 +67,13 @@ contract RtknToPrimeConverter is Initializable, IRtknToPrimeConverter, OwnableUp
         totalrTKNPledged += amount;
 
         emit Pledged(msg.sender, amount);
+    }
+
+    function burnRTKNs() external onlyOwner {
+        require(currentPhase == Phase.Phase1, "Cannot burn RTKNs in current phase");
+        uint256 contractBalance = rTKN.balanceOf(address(this));
+        rTKN.burn(contractBalance);
+        emit Burned(contractBalance);
     }
 
     function startPhase2() external onlyOwner {
