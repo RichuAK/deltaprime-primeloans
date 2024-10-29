@@ -13,7 +13,6 @@
       </StatsBarBeta>
 
       <SPrimePanel v-if="afterLaunchTime" :is-prime-account="true" :user-address="account" :total-deposits-or-borrows="noSmartLoanInternal ? 0 : debt"></SPrimePanel>
-      <LTIPStatsBar v-if="isArbitrum"></LTIPStatsBar>
 
       <InfoBubble v-if="noSmartLoanInternal === false" cacheKey="ACCOUNT-READY">
         Your Prime Account is ready! Now you can borrow,<br>
