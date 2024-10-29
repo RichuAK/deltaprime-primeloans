@@ -44,13 +44,7 @@ contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard
     }
 
     function previewFuturePrimeAmountBasedOnPledgedAmountForUser(address user) external view returns (uint256) {
-        if(currentPhase == Phase.Phase1) {
-            return userrTKNPledged[user] * CONVERSION_RATIO;
-        } else {
-            uint256 pledgedAmount = userrTKNPledged[user];
-            uint256 adjustedPledgedAmount = (pledgedAmount * scalingFactor) / 1e18;
-            return adjustedPledgedAmount * CONVERSION_RATIO;
-        }
+        return userrTKNPledged[user] * CONVERSION_RATIO / 1e18;
     }
 
     function pledgerTKN(uint256 amount) external nonReentrant {

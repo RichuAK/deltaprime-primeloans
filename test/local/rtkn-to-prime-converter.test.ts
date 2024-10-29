@@ -7,7 +7,7 @@ describe("RtknToPrimeConverter Contract", function () {
     let owner, addr1, addr2, addr3, addr4, addrs;
     let rtknToPrimeConverter;
     let rtkn;
-    const rRTKNMaxCap = ethers.utils.parseEther("1000"); // Max cap in PRIME tokens
+    const rRTKNMaxCap = ethers.utils.parseEther("1000"); // Max cap in rTKNs
 
     beforeEach(async function () {
         // Get signers
@@ -54,10 +54,13 @@ describe("RtknToPrimeConverter Contract", function () {
             const pledgeAmount = ethers.utils.parseEther("100");
             await rtkn.connect(addr1).approve(rtknToPrimeConverter.address, pledgeAmount);
 
+            expect(await rtknToPrimeConverter.previewFuturePrimeAmountBasedOnPledgedAmountForUser(addr1.address)).to.equal(0);
+
             await expect(rtknToPrimeConverter.connect(addr1).pledgerTKN(pledgeAmount))
                 .to.emit(rtknToPrimeConverter, "Pledged")
                 .withArgs(addr1.address, pledgeAmount);
 
+            expect(fromWei(await rtknToPrimeConverter.previewFuturePrimeAmountBasedOnPledgedAmountForUser(addr1.address))).to.be.closeTo(fromWei(pledgeAmount) * 0.884 / 1.4, 1e-10);
             expect(await rtknToPrimeConverter.userrTKNPledged(addr1.address)).to.equal(pledgeAmount);
             expect(await rtknToPrimeConverter.totalrTKNPledged()).to.equal(pledgeAmount);
         });
@@ -136,7 +139,9 @@ describe("RtknToPrimeConverter Contract", function () {
             await rtkn.connect(addr2).approve(rtknToPrimeConverter.address, pledgeAmount2);
             await rtkn.connect(addr3).approve(rtknToPrimeConverter.address, pledgeAmount3);
 
+            expect(fromWei(await rtknToPrimeConverter.previewFuturePrimeAmountBasedOnPledgedAmountForUser(addr1.address))).to.be.equal(0);
             await rtknToPrimeConverter.connect(addr1).pledgerTKN(pledgeAmount1);
+            expect(fromWei(await rtknToPrimeConverter.previewFuturePrimeAmountBasedOnPledgedAmountForUser(addr1.address))).to.be.closeTo(fromWei(pledgeAmount1) * 0.884 / 1.4, 1e-10);
 
             await rtknToPrimeConverter.connect(addr2).pledgerTKN(pledgeAmount2);
             await rtknToPrimeConverter.connect(addr3).pledgerTKN(pledgeAmount3);
@@ -153,6 +158,9 @@ describe("RtknToPrimeConverter Contract", function () {
             // Process remaining users
             await rtknToPrimeConverter.connect(addr1).processUsers(batchSize);
             expect(await rtknToPrimeConverter.userProcessed(addr3.address)).to.be.true;
+
+            const scalingFactor = fromWei(await rtknToPrimeConverter.scalingFactor());
+            expect(fromWei(await rtknToPrimeConverter.previewFuturePrimeAmountBasedOnPledgedAmountForUser(addr1.address))).to.be.closeTo(fromWei(pledgeAmount1) * scalingFactor * 0.884 / 1.4, 1e-10);
         });
 
         it("Should refund excess rTKN when demand exceeds cap", async function () {
