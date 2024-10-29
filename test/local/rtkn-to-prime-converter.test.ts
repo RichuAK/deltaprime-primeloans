@@ -117,8 +117,7 @@ describe("RtknToPrimeConverter Contract", function () {
 
             await rtknToPrimeConverter.connect(owner).startPhase2();
 
-            const CONVERSION_RATIO = fromWei(await rtknToPrimeConverter.CONVERSION_RATIO());
-            const totalDemand = fromWei(await rtknToPrimeConverter.totalrTKNPledged()) * CONVERSION_RATIO;
+            const totalDemand = fromWei(await rtknToPrimeConverter.totalrTKNPledged());
 
             let rTKNMaxCapNormalized = fromWei(rRTKNMaxCap)
             const expectedScalingFactor = rTKNMaxCapNormalized /totalDemand;

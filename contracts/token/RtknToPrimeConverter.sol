@@ -11,7 +11,7 @@ contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard
 
     IERC20 public rTKN;
 
-    uint256 public constant CONVERSION_RATIO = 0.884e18; // Scaled by 1e18 for precision
+    uint256 public constant CONVERSION_RATIO = 0.631428571428571e18; // 0.884 / 1.4; scaled by 1e18 for precision
     uint256 public rRTKNMaxCap;
 
     Phase public currentPhase;
