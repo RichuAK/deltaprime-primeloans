@@ -41,6 +41,8 @@ interface IRtknToPrimeConverter {
 
     function getTotalUsers() external view returns (uint256);
 
+    function previewFuturePrimeAmountBasedOnPledgedAmountForUser(address user) external view returns (uint256);
+
     // Events
     event Pledged(address indexed user, uint256 amount);
     event PhaseStarted(Phase newPhase, uint256 scalingFactor);

@@ -11,7 +11,7 @@ contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard
 
     IERC20 public rTKN;
 
-    uint256 public constant CONVERSION_RATIO = 1e18; // Scaled by 1e18 for precision
+    uint256 public constant CONVERSION_RATIO = 0.884e18; // Scaled by 1e18 for precision
     uint256 public rRTKNMaxCap;
 
     Phase public currentPhase;
@@ -43,6 +43,16 @@ contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard
         rRTKNMaxCap = _newMaxCap;
     }
 
+    function previewFuturePrimeAmountBasedOnPledgedAmountForUser(address user) external view returns (uint256) {
+        if(currentPhase == Phase.Phase1) {
+            return userrTKNPledged[user] * CONVERSION_RATIO;
+        } else {
+            uint256 pledgedAmount = userrTKNPledged[user];
+            uint256 adjustedPledgedAmount = (pledgedAmount * scalingFactor) / 1e18;
+            return adjustedPledgedAmount * CONVERSION_RATIO;
+        }
+    }
+
     function pledgerTKN(uint256 amount) external nonReentrant {
         require(currentPhase == Phase.Phase1, "Pledging not allowed in current phase");
         require(amount > 0, "Amount must be greater than zero");
@@ -62,7 +72,7 @@ contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard
         require(currentPhase == Phase.Phase1, "Already in Phase 2");
         currentPhase = Phase.Phase2;
 
-        uint256 totalrRTKNDemanded = (totalrTKNPledged * CONVERSION_RATIO) / 1e18;
+        uint256 totalrRTKNDemanded = totalrTKNPledged;
         if (totalrRTKNDemanded <= rRTKNMaxCap) {
             scalingFactor = 1e18;
         } else {
