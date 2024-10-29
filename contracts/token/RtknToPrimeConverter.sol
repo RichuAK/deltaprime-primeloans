@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../interfaces/IRtknToPrimeConverter.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract RtknToPrimeConverter is Ownable, ReentrancyGuard {
+contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public rTKN;
@@ -13,7 +14,6 @@ contract RtknToPrimeConverter is Ownable, ReentrancyGuard {
     uint256 public constant CONVERSION_RATIO = 1e18; // Scaled by 1e18 for precision
     uint256 public rRTKNMaxCap;
 
-    enum Phase { Phase1, Phase2 }
     Phase public currentPhase;
 
     mapping(address => uint256) public userrTKNPledged;
@@ -24,13 +24,6 @@ contract RtknToPrimeConverter is Ownable, ReentrancyGuard {
     uint256 public totalAdjustedrTKNPledged;
     uint256 public scalingFactor; // Scaled by 1e18 for precision
     uint256 public currentBatchIndex;
-
-    // Event definitions
-    event Pledged(address indexed user, uint256 amount);
-    event PhaseStarted(Phase newPhase, uint256 scalingFactor);
-    event UserProcessed(address indexed user, uint256 adjustedPledgedAmount, uint256 excessAmount);
-    event Withdrawal(address indexed owner, uint256 amount);
-    event MaxCapSet(uint256 prevMaxCap, uint256 newMaxCap);
 
     constructor(
         address _rTKNAddress,
