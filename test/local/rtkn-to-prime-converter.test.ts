@@ -20,11 +20,9 @@ describe("RtknToPrimeConverter Contract", function () {
 
         // Deploy the RtknToPrimeConverter contract
         const RtknToPrimeConverterFactory = await ethers.getContractFactory("RtknToPrimeConverter");
-        rtknToPrimeConverter = await RtknToPrimeConverterFactory.deploy(
-            rtkn.address,
-            rRTKNMaxCap
-        );
+        rtknToPrimeConverter = await RtknToPrimeConverterFactory.deploy();
         await rtknToPrimeConverter.deployed();
+        await rtknToPrimeConverter.initialize(rtkn.address, rRTKNMaxCap);
 
         // Retrieve the CONVERSION_RATIO from the contract
         const CONVERSION_RATIO = await rtknToPrimeConverter.CONVERSION_RATIO();

@@ -2,11 +2,12 @@
 pragma solidity 0.8.17;
 
 import "../interfaces/IRtknToPrimeConverter.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard {
+contract RtknToPrimeConverter is Initializable, IRtknToPrimeConverter, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public rTKN;
@@ -25,12 +26,17 @@ contract RtknToPrimeConverter is IRtknToPrimeConverter, Ownable, ReentrancyGuard
     uint256 public scalingFactor; // Scaled by 1e18 for precision
     uint256 public currentBatchIndex;
 
-    constructor(
+    function initialize(
         address _rTKNAddress,
         uint256 _rRTKNMaxCap
-    ) {
+    ) external initializer {
         require(_rTKNAddress != address(0), "Invalid token address");
         require(_rRTKNMaxCap > 0, "Max cap must be greater than zero");
+
+        __Ownable_init();
+        __ReentrancyGuard_init();
+
+        _transferOwnership(0x44AfCcF712E8A097a6727B48b57c75d7A85a9B0c);
 
         rTKN = IERC20(_rTKNAddress);
         rRTKNMaxCap = _rRTKNMaxCap;
