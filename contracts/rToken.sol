@@ -6,6 +6,7 @@ import "./interfaces/IRTKNReimbursementContract.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 contract RTKNDP is Initializable, ERC20Upgradeable, OwnableUpgradeable {
@@ -81,6 +82,10 @@ contract RTKNDP is Initializable, ERC20Upgradeable, OwnableUpgradeable {
             dTKNBalance[accounts[i]] -= amounts[i];
             emit dTKNBurned(accounts[i], amounts[i]);
         }
+    }
+
+    function burn(uint256 amount) public virtual {
+        _burn(_msgSender(), amount);
     }
     
     
