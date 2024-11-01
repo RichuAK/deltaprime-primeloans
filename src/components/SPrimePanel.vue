@@ -1,6 +1,7 @@
 <template>
   <div class="sprime-panel-component" v-bind:class="{'sprime-panel-component--expanded': expanded}">
     <div class="header-actions">
+      <FlatButton :active="true" v-on:buttonClick="openPledgeModal()">RTKN</FlatButton>
       <a v-if="sPrimeConfig" :href="sPrimeConfig.dexWebsite" target="_blank">
         <FlatButton :active="!this.isActionDisabledRecord['BUY']">get prime <img class="buy-prime-logo"
                                                                                  src="src/assets/logo/prime.svg"/>
@@ -150,6 +151,7 @@ import InfoIcon from './InfoIcon.vue';
 import PriceRangeChart from './PriceRangeChart.vue';
 import {ActionSection} from '../services/globalActionsDisableService';
 import {poolQuery} from '../../lambda/utils/queries';
+import RtknPledgeModal from './RtknPledgeModal.vue';
 
 const ethers = require('ethers');
 
@@ -567,7 +569,21 @@ export default {
       }
       if (minPrice > this.poolPrice) this.distributionType = DistributionType.LEFT_NEGATIVE;
       if (maxPrice < this.poolPrice) this.distributionType = DistributionType.RIGHT_NEGATIVE;
-    }
+    },
+
+    async openPledgeModal() {
+      console.log('test');
+      const rtknTokenContract = new ethers.Contract('0x9Add42075A0fA68fb9891779f20e7E8074D94860', erc20ABI, this.provider.getSigner());
+      const rtknBalance = await this.getWalletTokenBalance(this.account, 'rTKN', rtknTokenContract, 18);
+      console.log(rtknBalance);
+      const modalInstance = this.openModal(RtknPledgeModal);
+      modalInstance.available = rtknBalance;
+      modalInstance.userPledged = 59;
+      modalInstance.rtknCap = 500000;
+      modalInstance.totalPledged = 248126;
+      modalInstance.conversionRatio = 1.5;
+      modalInstance.totalUsers = 1485;
+    },
   },
 };
 </script>

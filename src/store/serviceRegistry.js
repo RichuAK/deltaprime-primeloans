@@ -30,6 +30,7 @@ import sPrimeService from "../services/sPrimeService";
 import vPrimeService from "../services/vPrimeService";
 import GlobalActionsDisableService from "../services/globalActionsDisableService";
 import AvalancheBoostService from '../services/avalancheBoostService';
+import RtknService from '../services/rtknService';
 
 export default {
   namespaced: true,
@@ -66,5 +67,6 @@ export default {
     vPrimeService: new vPrimeService(),
     globalActionsDisableService: new GlobalActionsDisableService(),
     avalancheBoostService: new AvalancheBoostService(),
+    rtknService: new RtknService(),
   },
 };
