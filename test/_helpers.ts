@@ -36,6 +36,7 @@ import {JsonRpcSigner} from "@ethersproject/providers";
 import addresses from "../common/addresses/avax/token_addresses.json";
 import addresses_arb from "../common/addresses/arbitrum/token_addresses.json";
 import { getSelectors } from "../tools/diamond/selectors";
+import {WrapperBuilder} from "@redstone-finance/evm-connector";
 
 const {deployFacet} = require('../tools/diamond/deploy-diamond');
 
@@ -549,17 +550,19 @@ export const deployPools = async function(
     owner: SignerWithAddress | JsonRpcSigner,
     depositor: SignerWithAddress | Wallet,
     depositAmount: number = 1000,
-    chain: string = 'AVAX'
+    chain: string = 'AVAX',
+    mockPrices: any = [],
+    tokenManager: string = ''
 ) {
     for (const token of tokens) {
         let {
             poolContract,
             tokenContract
-        } = await deployAndInitializeLendingPool(owner, token.name, smartLoansFactory.address, token.airdropList, chain);
+        } = await deployAndInitializeLendingPool(owner, token.name, smartLoansFactory.address, token.airdropList, chain, '', tokenManager);
         for (const user of token.airdropList) {
             if (token.name == 'AVAX' || token.name == 'MCKUSD') {
                 await tokenContract!.connect(user).approve(poolContract.address, toWei(depositAmount.toString()));
-                await poolContract.connect(user).deposit(toWei(depositAmount.toString()));
+                await (WrapperBuilder.wrap(poolContract.connect(user)).usingSimpleNumericMock(mockPrices)).deposit(toWei(depositAmount.toString()));
             }
         }
         lendingPools.push(new PoolAsset(toBytes32(token.name), poolContract.address));
@@ -965,6 +968,39 @@ export const deployAllFacets = async function (diamondAddress: any, mock: boolea
         ],
         hardhatConfig);
 
+        await deployFacet("YieldYakWombatFacet", diamondAddress, [
+                'depositSavaxToAvaxSavaxYY',
+                'withdrawSavaxFromAvaxSavaxYY',
+                'sAvaxBalanceAvaxSavaxYY',
+                'depositGgavaxToAvaxGgavaxYY',
+                'withdrawGgavaxFromAvaxGgavaxYY',
+                'ggAvaxBalanceAvaxGgavaxYY',
+                'depositAvaxToAvaxSavaxYY',
+                'withdrawAvaxFromAvaxSavaxYY',
+                'avaxBalanceAvaxSavaxYY',
+                'depositAvaxToAvaxGgavaxYY',
+                'withdrawAvaxFromAvaxGgavaxYY',
+                'avaxBalanceAvaxGgavaxYY',
+                'withdrawSavaxFromAvaxSavaxInOtherTokenYY',
+                'withdrawGgavaxFromAvaxGgavaxInOtherTokenYY',
+                'withdrawAvaxFromAvaxSavaxInOtherTokenYY',
+                'withdrawAvaxFromAvaxGgavaxInOtherTokenYY',
+                'depositAndStakeAvaxSavaxLpSavaxYY',
+                'unstakeAndWithdrawAvaxSavaxLpSavaxYY',
+                'depositAndStakeAvaxSavaxLpAvaxYY',
+                'unstakeAndWithdrawAvaxSavaxLpAvaxYY',
+                'depositAvaxGgavaxLpGgavaxYY',
+                'unstakeAndWithdrawAvaxGgavaxLpGgavaxYY',
+                'depositAndStakeAvaxGgavaxLpAvaxYY',
+                'unstakeAndWithdrawAvaxGgavaxLpAvaxYY',
+                'migrateAvaxSavaxLpSavaxFromWombatToYY',
+                'migrateAvaxGgavaxLpGgavaxFromWombatToYY',
+                'migrateAvaxSavaxLpAvaxFromWombatToYY',
+                'migrateAvaxGgavaxLpAvaxFromWombatToYY',
+            ],
+            hardhatConfig
+        );
+
         if (mock) {
             await deployFacet("UniswapV3FacetMock", diamondAddress, ['mintLiquidityUniswapV3', 'increaseLiquidityUniswapV3', 'decreaseLiquidityUniswapV3', 'burnLiquidityUniswapV3', 'getOwnedUniswapV3TokenIds'], hardhatConfig)
 
@@ -1353,7 +1389,7 @@ export async function syncTime() {
     }
 }
 
-export async function deployAndInitializeLendingPool(owner: any, tokenName: string, smartLoansFactoryAddress: string, tokenAirdropList: any, chain = 'AVAX', rewarder: string = '') {
+export async function deployAndInitializeLendingPool(owner: any, tokenName: string, smartLoansFactoryAddress: string, tokenAirdropList: any, chain = 'AVAX', rewarder: string = '', tokenManagerAddress: string = '') {
 
     const mockVariableUtilisationRatesCalculator = (await deployContract(owner, VariableUtilisationRatesCalculatorArtifact)) as MockVariableUtilisationRatesCalculator;
     let pool = (await deployContract(owner, PoolArtifact)) as Pool;
@@ -1444,6 +1480,7 @@ export async function deployAndInitializeLendingPool(owner: any, tokenName: stri
         rewarder,
         0
     );
+    await pool.setTokenManager(tokenManagerAddress);
     return {'poolContract': pool, 'tokenContract': tokenContract}
 }
 

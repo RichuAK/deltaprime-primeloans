@@ -5,11 +5,11 @@ import "../TraderJoeV2Facet.sol";
 
 contract TraderJoeV2ArbitrumFacet is TraderJoeV2Facet {
     function maxBinsPerPrimeAccount() public pure override returns (uint256) {
-        return 1600;
+        return 300;
     }
 
     function getWhitelistedTraderJoeV2Pairs() internal pure override returns (ILBPair[] memory pools) {
-        pools = new ILBPair[](12);
+        pools = new ILBPair[](18);
         // TJLB_DAI_USDCe
         pools[0] = ILBPair(0x500173F418137090dad96421811147b63b448A0f);
         // TJLB_ETH_USDT
@@ -34,5 +34,18 @@ contract TraderJoeV2ArbitrumFacet is TraderJoeV2Facet {
         pools[10] = ILBPair(0x461761f2848EC6B9Fb3D3fb031e112c7d5b89563);
         // TJLB_MAGIC_ETH
         pools[11] = ILBPair(0xE847C55a3148580E864EC31E7273bc4eC25089c1);
+        // TJLB_ARB_ETH_v2.2
+        pools[12] = ILBPair(0xC09F4ad33a164e29DF3c94719ffD5F7B5B057781);
+        // TJLB_ETH_USDC_v2.2
+        pools[13] = ILBPair(0xb7236B927e03542AC3bE0A054F2bEa8868AF9508);
+        // TJLB_ETH_USDT_v2.2
+        pools[14] = ILBPair(0x055f2cF6da90F14598D35C1184ED535C908dE737);
+
+        // TJLB_wstETH_ETH_v2.2
+        pools[15] = ILBPair(0x71bc33F539f83b99674D71AcFeb2ce0373376512);
+        // TJLB_ezETH_ETH_v2.2
+        pools[16] = ILBPair(0x8C0635aD0AfD7aa9444AF07Da6C104DD79b58D82);
+        // TJLB_weETH_ETH_v2.2
+        pools[17] = ILBPair(0x2088eB5E23F24458e241430eF155d4EC05BBc9e8);
     }
 }

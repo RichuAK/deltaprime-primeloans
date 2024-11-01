@@ -22,6 +22,7 @@ functions/config.json
 .vercel
 .openzeppelin
 typechain
+typechain-types
 tenderly.yaml
 chromium.zip
 

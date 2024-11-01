@@ -55,6 +55,7 @@ interface SmartLoanGigaChadInterface is
     IPenpieFacet,
     ILTIPFacet,
     IWombatFacet,
+    IYieldYakWombatFacet,
     ISmartLoanWrappedNativeTokenFacet,
     IPangolinDEXFacet,
     IUniswapV2DEXFacet,

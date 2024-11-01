@@ -14,7 +14,7 @@ import {DiamondStorageLib} from "../lib/DiamondStorageLib.sol";
 import "../lib/local/DeploymentConstants.sol";
 
 abstract contract TraderJoeV2Facet is ITraderJoeV2Facet, ReentrancyGuardKeccak, OnlyOwnerOrInsolvent {
-
+    using TransferHelper for address payable;
     using TransferHelper for address;
 
     address private constant REWARDER = 0x624C5b9BEB13af6893e715932c26e2b7A59c410a;
@@ -95,12 +95,17 @@ abstract contract TraderJoeV2Facet is ITraderJoeV2Facet, ReentrancyGuardKeccak, 
 
         if(baseRewarder == address(0)) revert TraderJoeV2NoRewardHook();
 
-        IERC20 rewardToken = ILBHooksBaseRewarder(baseRewarder).getRewardToken();
-        uint256 beforeBalance = rewardToken.balanceOf(address(this));
+        address rewardToken = address(ILBHooksBaseRewarder(baseRewarder).getRewardToken());
+        bool isNative = (rewardToken == address(0));
+        uint256 beforeBalance = isNative ? address(this).balance : IERC20(rewardToken).balanceOf(address(this));
         ILBHooksBaseRewarder(baseRewarder).claim(address(this), ids);
-        uint256 reward = rewardToken.balanceOf(address(this)) - beforeBalance;
+        uint256 reward = isNative ? address(this).balance - beforeBalance : IERC20(rewardToken).balanceOf(address(this)) - beforeBalance;
         if(reward > 0) {
-            address(rewardToken).safeTransfer(msg.sender, reward);
+            if(isNative) {
+                payable(msg.sender).safeTransferETH(reward);
+            } else {
+                rewardToken.safeTransfer(msg.sender, reward);
+            }
         }
     }
 
@@ -186,7 +191,7 @@ abstract contract TraderJoeV2Facet is ITraderJoeV2Facet, ReentrancyGuardKeccak, 
 
             for (int256 j; uint(j) < ownedBins.length; ++j) {
                 if (address(ownedBins[uint(j)].pair) == address(pairInfo.LBPair)
-                    && ownedBins[uint(j)].id == depositIds[i]
+                && ownedBins[uint(j)].id == depositIds[i]
                 ) {
                     userHadBin = true;
                     break;
@@ -205,7 +210,7 @@ abstract contract TraderJoeV2Facet is ITraderJoeV2Facet, ReentrancyGuardKeccak, 
 
         emit AddLiquidityTraderJoeV2(msg.sender, address(pairInfo.LBPair), depositIds, liquidityMinted, tokenX, tokenY, amountXAdded, amountYAdded, block.timestamp);
     }
-
+    
     function removeLiquidityTraderJoeV2(ILBRouter traderJoeV2Router, RemoveLiquidityParameters memory parameters) external nonReentrant onlyOwnerOrInsolvent noBorrowInTheSameBlock {
         if (!isRouterWhitelisted(address(traderJoeV2Router))) revert TraderJoeV2RouterNotWhitelisted();
         ILBPair lbPair = ILBPair(traderJoeV2Router.getFactory().getLBPairInformation(parameters.tokenX, parameters.tokenY, parameters.binStep).LBPair);
@@ -226,7 +231,7 @@ abstract contract TraderJoeV2Facet is ITraderJoeV2Facet, ReentrancyGuardKeccak, 
             }
         }
 
-        ITokenManager tokenManager = DeploymentConstants.getTokenManager();
+         ITokenManager tokenManager = DeploymentConstants.getTokenManager();
         bytes32 tokenX = tokenManager.tokenAddressToSymbol(address(parameters.tokenX));
         bytes32 tokenY = tokenManager.tokenAddressToSymbol(address(parameters.tokenY));
 
