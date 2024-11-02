@@ -273,7 +273,7 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
 
 
     function getPoolPrice() public view returns (uint256) {
-        uint256 tokenYPrice = getOracleNumericValueFromTxMsg("ETH");
+        uint256 tokenYPrice = getOracleNumericValueFromTxMsg("AVAX");
         uint256 primePrice = getOracleNumericValueFromTxMsg("PRIME");
         uint256 primeToTokenYPrice = primePrice * 1e8 / tokenYPrice; // both tokenYPrice and primePrice have 8 decimals
         return primeToTokenYPrice;
