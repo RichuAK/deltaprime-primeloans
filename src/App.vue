@@ -25,8 +25,14 @@
     <Banner v-if="showArbitrumPrimeAccountBanner">
       Prime Accounts are paused because of the recent exploit on the Savings side. Prime Accounts are safe.
     </Banner>
-    <Banner v-if="showArbitrumDepositorBanner" background="red">
-      DeltaPrime Blue is currently under attack. Do not deposit any assets.
+    <Banner v-if="showArbitrumDepositorBanner" background="green-accent" :closable="true">
+      rTKN - PRIME conversion will open up 6 November, 2pm CET.
+      <a class="banner-link" href="https://discord.com/channels/889510301421166643/912702114252329060/1301169054350053407"
+         target="_blank">
+        <b>
+          Read more.
+        </b>
+      </a>
     </Banner>
     <Banner v-if="showInterestRateBanner" background="green-accent" :closable="true">
       Interest rate model will be updated at 12:00 CET. <a class="banner-link"
@@ -54,16 +60,6 @@
          target="_blank"><b>Read more.</b>
       </a>
     </Banner>
-
-<!--    <Banner v-if="showArbitrumDepositorBanner" background="green-accent" :closable="true">-->
-<!--      Liquidity mining event is updated! Shortly after a pool hits $1M the next pool opens up.-->
-<!--      <a class="banner-link" href="https://medium.com/@Delta_Prime/relaunching-deltaprime-on-arbitrum-ac43bdd91ed5"-->
-<!--         target="_blank">-->
-<!--        <b>-->
-<!--          Read more.-->
-<!--        </b>-->
-<!--      </a>-->
-<!--    </Banner>-->
     <!--    <Banner v-if="showArbitrumPrimeAccountBanner" background="green-accent" :closable="true">
           Last chance to mint GM for the current milestone
         </Banner>-->
@@ -219,7 +215,7 @@ export default {
 
     if (config.chainId === 42161) {
       if (window.location.href.includes('pools')) {
-        // this.showArbitrumDepositorBanner = true;
+        this.showArbitrumDepositorBanner = true;
       }
       if (window.location.href.includes('prime-account')) {
         this.remainingTime = getCountdownString(1695218400000);

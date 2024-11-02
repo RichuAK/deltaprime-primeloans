@@ -71,7 +71,7 @@ export default class sPrimeService {
 
   async updateSPrimeData(provider, sPrimeAddress, poolAddress, dex, secondAsset, ownerAddress, revenueAwsEndpoint) {
     const walletAddress = provider.provider.selectedAddress;
-    let dataFeeds = [...Object.keys(config.POOLS_CONFIG), secondAsset];
+    let dataFeeds = [...Object.keys(config.POOLS_CONFIG), secondAsset, 'PRIME'];
 
     const sPrimeContract = await wrapContract(new ethers.Contract(sPrimeAddress, SPRIME.abi, provider.getSigner()), dataFeeds);
 
@@ -81,38 +81,57 @@ export default class sPrimeService {
           redstonePriceData => {
             let secondAssetPrice = redstonePriceData[secondAsset][0].dataPoints[0].value;
 
+            console.log('1A')
             sPrimeContract.totalSupply().then(
               async value => {
                 value = formatUnits(value) * secondAssetPrice;
 
                 this.sPrimeTotalValue$.next(value)
+                  console.log('1B')
+
               }
             );
 
-            sPrimeContract.balanceOf(ownerAddress).then(
+              console.log('2A')
+
+              sPrimeContract.balanceOf(ownerAddress).then(
               async value => {
                 this.sPrimeBalance$.next(formatUnits(value))
+                  console.log('2B')
+
               }
             );
 
-            sPrimeContract.getLockedBalance(ownerAddress).then(
+              console.log('3A')
+
+              sPrimeContract.getLockedBalance(ownerAddress).then(
               async value => {
                 this.sPrimeLockedBalance$.next(formatUnits(value))
+                  console.log('3B')
+
               }
             );
 
             if (dex === 'UNISWAP') {
-              sPrimeContract['getUserValueInTokenY(address)'](ownerAddress).then(
+                console.log('4A')
+
+                sPrimeContract.getUserValueInTokenY(ownerAddress).then(
                 async value => {
                   value = formatUnits(value, config.ASSETS_CONFIG[secondAsset].decimals) * secondAssetPrice;
 
                   this.sPrimeValue$.next(value)
+                    console.log('4B')
+
                 }
               );
+                console.log('5A')
 
               sPrimeContract.getPoolPrice().then(
+
                 poolPrice => {
                   this.poolPrice$.next(poolPrice * secondAssetPrice / 1e8)
+                    console.log('5B')
+
                 }
               );
 
