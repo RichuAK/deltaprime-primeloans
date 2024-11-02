@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// Last deployed from commit: 9f02dab5ae5dd02d0771bb7dedabb0ad6ac8802c;
+// Last deployed from commit: 76d827259d40709390466a8d61f486cd5b77047c;
 pragma solidity ^0.8.17;
 
 // Importing necessary libraries and interfaces
@@ -330,10 +330,6 @@ contract sPrimeUniswap is
 
             address tokenIn;
             address tokenOut;
-
-            (amountIn, amountOut) = swapTokenX
-                ? (amountIn, amountOut)
-                : (amountOut, amountIn);
 
             if (swapTokenX) {
                 tokenIn = address(tokenX);
