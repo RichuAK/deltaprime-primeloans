@@ -81,57 +81,41 @@ export default class sPrimeService {
           redstonePriceData => {
             let secondAssetPrice = redstonePriceData[secondAsset][0].dataPoints[0].value;
 
-            console.log('1A')
             sPrimeContract.totalSupply().then(
               async value => {
                 value = formatUnits(value) * secondAssetPrice;
 
                 this.sPrimeTotalValue$.next(value)
-                  console.log('1B')
-
               }
             );
-
-              console.log('2A')
 
               sPrimeContract.balanceOf(ownerAddress).then(
               async value => {
                 this.sPrimeBalance$.next(formatUnits(value))
-                  console.log('2B')
-
               }
             );
-
-              console.log('3A')
 
               sPrimeContract.getLockedBalance(ownerAddress).then(
               async value => {
                 this.sPrimeLockedBalance$.next(formatUnits(value))
-                  console.log('3B')
 
               }
             );
 
             if (dex === 'UNISWAP') {
-                console.log('4A')
-
                 sPrimeContract.getUserValueInTokenY(ownerAddress).then(
                 async value => {
                   value = formatUnits(value, config.ASSETS_CONFIG[secondAsset].decimals) * secondAssetPrice;
 
                   this.sPrimeValue$.next(value)
-                    console.log('4B')
 
                 }
               );
-                console.log('5A')
 
               sPrimeContract.getPoolPrice().then(
 
                 poolPrice => {
                   this.poolPrice$.next(poolPrice * secondAssetPrice / 1e8)
-                    console.log('5B')
-
                 }
               );
 
@@ -153,16 +137,16 @@ export default class sPrimeService {
             }
 
             if (dex === 'TRADERJOEV2') {
+                sPrimeContract.getUserValueInTokenY(ownerAddress).then(
+                    async value => {
+                        value = formatUnits(value, config.ASSETS_CONFIG[secondAsset].decimals) * secondAssetPrice;
+
+                        this.sPrimeValue$.next(value)
+                    }
+                );
+
               sPrimeContract.getPoolPrice().then(
                 poolPrice => {
-                  sPrimeContract['getUserValueInTokenY(address,uint256)'](ownerAddress, poolPrice).then(
-                    async value => {
-                      value = formatUnits(value, config.ASSETS_CONFIG[secondAsset].decimals) * secondAssetPrice;
-
-                      this.sPrimeValue$.next(value)
-                    }
-                  );
-
                   this.poolPrice$.next(poolPrice * secondAssetPrice / 1e8)
                 }
               );
