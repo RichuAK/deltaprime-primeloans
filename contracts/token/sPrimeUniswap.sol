@@ -318,7 +318,7 @@ contract sPrimeUniswap is
                 if(swapTokenX){
                     amountIn = FullMath.mulDiv(diff / 2, 1e8, poolPrice);
                 } else {
-                    amountIn = FullMath.mulDiv(diff / 2, poolPrice, 1e8);
+                    amountIn = diff / 2;
                 }
             }
             uint256 amountOut;
