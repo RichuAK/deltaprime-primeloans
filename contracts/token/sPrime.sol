@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// Last deployed from commit: aca0d66772607a851d7017b5cb3e6f38ee11f918;
+// Last deployed from commit: 76d827259d40709390466a8d61f486cd5b77047c;
 
 pragma solidity ^0.8.17;
 
@@ -82,37 +82,37 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
         }
     }
 
-    /**
-    * @dev initialize of the contract.
-    * @param tokenX_ The address of the token X.
-    * @param tokenY_ The address of the token Y.
-    * @param name_ The name of the SPrime token. ex: PRIME-USDC LP
-    * @param depositForm_ Pre-defined distributions and delta ids
-    * @param positionManager_ Position Manager contract for sPrime
-    * @param traderJoeV2Router_ Trader Joe V2 Router Address
-    */
-    function initialize(address tokenX_, address tokenY_, string memory name_, DepositForm[] calldata depositForm_, IPositionManager positionManager_, address traderJoeV2Router_) external initializer {
-        __PendingOwnable_init();
-        __ReentrancyGuard_init();
-        __ERC20_init(name_, "sPrime");
-
-        traderJoeV2Router = traderJoeV2Router_;
-        ILBFactory lbFactory = ILBRouter(traderJoeV2Router).getFactory();
-        ILBFactory.LBPairInformation memory pairInfo = lbFactory.getLBPairInformation(IERC20(tokenX_), IERC20(tokenY_), DEFAULT_BIN_STEP);
-
-        lbPair = pairInfo.LBPair;
-        tokenX = IERC20Metadata(address(lbPair.getTokenX()));
-        tokenY = IERC20Metadata(address(lbPair.getTokenY()));
-
-        tokenXDecimals = tokenX.decimals();
-        tokenYDecimals = tokenY.decimals();
-
-        for(uint256 i = 0 ; i < depositForm_.length ; i ++) {
-            depositForm.push(depositForm_[i]);
-        }
-
-        positionManager = positionManager_;
-    }
+//    /**
+//    * @dev initialize of the contract.
+//    * @param tokenX_ The address of the token X.
+//    * @param tokenY_ The address of the token Y.
+//    * @param name_ The name of the SPrime token. ex: PRIME-USDC LP
+//    * @param depositForm_ Pre-defined distributions and delta ids
+//    * @param positionManager_ Position Manager contract for sPrime
+//    * @param traderJoeV2Router_ Trader Joe V2 Router Address
+//    */
+//    function initialize(address tokenX_, address tokenY_, string memory name_, DepositForm[] calldata depositForm_, IPositionManager positionManager_, address traderJoeV2Router_) external initializer {
+//        __PendingOwnable_init();
+//        __ReentrancyGuard_init();
+//        __ERC20_init(name_, "sPrime");
+//
+//        traderJoeV2Router = traderJoeV2Router_;
+//        ILBFactory lbFactory = ILBRouter(traderJoeV2Router).getFactory();
+//        ILBFactory.LBPairInformation memory pairInfo = lbFactory.getLBPairInformation(IERC20(tokenX_), IERC20(tokenY_), DEFAULT_BIN_STEP);
+//
+//        lbPair = pairInfo.LBPair;
+//        tokenX = IERC20Metadata(address(lbPair.getTokenX()));
+//        tokenY = IERC20Metadata(address(lbPair.getTokenY()));
+//
+//        tokenXDecimals = tokenX.decimals();
+//        tokenYDecimals = tokenY.decimals();
+//
+//        for(uint256 i = 0 ; i < depositForm_.length ; i ++) {
+//            depositForm.push(depositForm_[i]);
+//        }
+//
+//        positionManager = positionManager_;
+//    }
 
     modifier onlyOperator() {
         if (_msgSender() != operator) {
@@ -308,12 +308,11 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
                     amountIn = FullMath.mulDiv(diff / 2, 1e8, poolPrice);
                     amountOut = diff / 2;
                 } else {
-                    amountIn = FullMath.mulDiv(diff / 2, poolPrice, 1e8);
+                    amountIn = diff / 2;
                     amountOut = diff / 2 * 1e8 / poolPrice;
                 }
             }
 
-            (amountIn, amountOut) = swapTokenX ? (amountIn, amountOut) : (amountOut, amountIn);
             IERC20[] memory tokenPathDynamic = new IERC20[](2);
             if (swapTokenX) {
                 tokenPathDynamic[0] = tokenX;
