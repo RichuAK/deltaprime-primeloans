@@ -230,7 +230,7 @@ contract AssetsOperationsFacet is ReentrancyGuardKeccak, OnlyOwnerOrInsolvent {
         notifyVPrimeController(DiamondStorageLib.contractOwner(), tokenManager);
     }
 
-    function withdrawUnsupportedToken(address token) external nonReentrant onlyOwner remainsSolvent {
+    function withdrawUnsupportedToken(address token) external nonReentrant noOwnershipTransferInLast24hrs onlyOwner remainsSolvent {
         ITokenManager tokenManager = DeploymentConstants.getTokenManager();
 
         // _NOT_SUPPORTED = 0

@@ -306,7 +306,7 @@ contract PenpieFacet is ReentrancyGuardKeccak, OnlyOwnerOrInsolvent {
         uint256 pendingPenpie,
         address[] memory bonusTokenAddresses,
         uint256[] memory pendingBonusRewards
-    ) internal {
+    ) internal noOwnershipTransferInLast24hrs {
         ITokenManager tokenManager = DeploymentConstants.getTokenManager();
         address owner = DiamondStorageLib.contractOwner();
 

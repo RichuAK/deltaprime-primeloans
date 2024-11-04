@@ -344,7 +344,7 @@ contract BalancerV2Facet is ReentrancyGuardKeccak, OnlyOwnerOrInsolvent, IBalanc
         );
     }
 
-    function claimRewardsBalancerV2(bytes32 poolId) external nonReentrant onlyOwner remainsSolvent {
+    function claimRewardsBalancerV2(bytes32 poolId) external nonReentrant noOwnershipTransferInLast24hrs onlyOwner remainsSolvent {
         ITokenManager tokenManager = DeploymentConstants.getTokenManager();
 
         (address pool,) = IVault(MASTER_VAULT_ADDRESS).getPool(poolId);
