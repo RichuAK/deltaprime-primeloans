@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// Last deployed from commit: aca0d66772607a851d7017b5cb3e6f38ee11f918;
+// Last deployed from commit: 76d827259d40709390466a8d61f486cd5b77047c;
 
 pragma solidity ^0.8.17;
 
@@ -10,7 +10,6 @@ import "../interfaces/ISPrimeTraderJoe.sol";
 import "../interfaces/IVPrimeController.sol";
 import "../lib/uniswap-v3/FullMath.sol";
 import "../lib/joe-v2/math/LiquidityConfigurations.sol";
-import "../lib/joe-v2/PriceHelper.sol";
 import "../abstract/PendingOwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -18,9 +17,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@redstone-finance/evm-connector/contracts/core/ProxyConnector.sol";
+import "@redstone-finance/evm-connector/contracts/core/RedstoneConsumerNumericBase.sol";
 
 // SPrime contract declaration
-contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableUpgradeable, ERC20Upgradeable, ProxyConnector {
+contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableUpgradeable, ERC20Upgradeable, ProxyConnector, RedstoneConsumerNumericBase {
     using SafeERC20 for IERC20Metadata; // Using SafeERC20 for IERC20Metadata for safe token transfers
     using PackedUint128Math for bytes32;
 
@@ -56,37 +56,63 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
         _disableInitializers();
     }
 
-    /**
-    * @dev initialize of the contract.
-    * @param tokenX_ The address of the token X.
-    * @param tokenY_ The address of the token Y.
-    * @param name_ The name of the SPrime token. ex: PRIME-USDC LP
-    * @param depositForm_ Pre-defined distributions and delta ids
-    * @param positionManager_ Position Manager contract for sPrime
-    * @param traderJoeV2Router_ Trader Joe V2 Router Address
-    */
-    function initialize(address tokenX_, address tokenY_, string memory name_, DepositForm[] calldata depositForm_, IPositionManager positionManager_, address traderJoeV2Router_) external initializer {
-        __PendingOwnable_init();
-        __ReentrancyGuard_init();
-        __ERC20_init(name_, "sPrime");
-
-        traderJoeV2Router = traderJoeV2Router_;
-        ILBFactory lbFactory = ILBRouter(traderJoeV2Router).getFactory();
-        ILBFactory.LBPairInformation memory pairInfo = lbFactory.getLBPairInformation(IERC20(tokenX_), IERC20(tokenY_), DEFAULT_BIN_STEP);
-
-        lbPair = pairInfo.LBPair;
-        tokenX = IERC20Metadata(address(lbPair.getTokenX()));
-        tokenY = IERC20Metadata(address(lbPair.getTokenY()));
-
-        tokenXDecimals = tokenX.decimals();
-        tokenYDecimals = tokenY.decimals();
-
-        for(uint256 i = 0 ; i < depositForm_.length ; i ++) {
-            depositForm.push(depositForm_[i]);
-        }
-
-        positionManager = positionManager_;
+    function getDataServiceId() public view virtual override returns (string memory) {
+        return "redstone-avalanche-prod";
     }
+
+    function getUniqueSignersThreshold() public view virtual override returns (uint8) {
+        return 3;
+    }
+
+    function getAuthorisedSignerIndex(
+        address signerAddress
+    ) public view virtual override returns (uint8) {
+        if (signerAddress == 0x1eA62d73EdF8AC05DfceA1A34b9796E937a29EfF) {
+            return 0;
+        } else if (signerAddress == 0x2c59617248994D12816EE1Fa77CE0a64eEB456BF) {
+            return 1;
+        } else if (signerAddress == 0x12470f7aBA85c8b81D63137DD5925D6EE114952b) {
+            return 2;
+        } else if (signerAddress == 0x109B4a318A4F5ddcbCA6349B45f881B4137deaFB) {
+            return 3;
+        } else if (signerAddress == 0x83cbA8c619fb629b81A65C2e67fE15cf3E3C9747) {
+            return 4;
+        } else {
+            revert SignerNotAuthorised(signerAddress);
+        }
+    }
+
+//    /**
+//    * @dev initialize of the contract.
+//    * @param tokenX_ The address of the token X.
+//    * @param tokenY_ The address of the token Y.
+//    * @param name_ The name of the SPrime token. ex: PRIME-USDC LP
+//    * @param depositForm_ Pre-defined distributions and delta ids
+//    * @param positionManager_ Position Manager contract for sPrime
+//    * @param traderJoeV2Router_ Trader Joe V2 Router Address
+//    */
+//    function initialize(address tokenX_, address tokenY_, string memory name_, DepositForm[] calldata depositForm_, IPositionManager positionManager_, address traderJoeV2Router_) external initializer {
+//        __PendingOwnable_init();
+//        __ReentrancyGuard_init();
+//        __ERC20_init(name_, "sPrime");
+//
+//        traderJoeV2Router = traderJoeV2Router_;
+//        ILBFactory lbFactory = ILBRouter(traderJoeV2Router).getFactory();
+//        ILBFactory.LBPairInformation memory pairInfo = lbFactory.getLBPairInformation(IERC20(tokenX_), IERC20(tokenY_), DEFAULT_BIN_STEP);
+//
+//        lbPair = pairInfo.LBPair;
+//        tokenX = IERC20Metadata(address(lbPair.getTokenX()));
+//        tokenY = IERC20Metadata(address(lbPair.getTokenY()));
+//
+//        tokenXDecimals = tokenX.decimals();
+//        tokenYDecimals = tokenY.decimals();
+//
+//        for(uint256 i = 0 ; i < depositForm_.length ; i ++) {
+//            depositForm.push(depositForm_[i]);
+//        }
+//
+//        positionManager = positionManager_;
+//    }
 
     modifier onlyOperator() {
         if (_msgSender() != operator) {
@@ -245,15 +271,12 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
         weight = amountY + amountXToY;
     }
 
-    function getPoolPrice() public view returns(uint256) {
-        uint256 price = PriceHelper.convert128x128PriceToDecimal(lbPair.getPriceFromId(lbPair.getActiveId()));
-        // price * 1e8 * 1edx / 1edy / 1e18
-        if (tokenXDecimals >= 10 + tokenYDecimals) {
-            price = price * 10 ** (tokenXDecimals - 10 - tokenYDecimals);
-        } else {
-            price = price / 10 ** (10 + tokenYDecimals - tokenXDecimals);
-        }
-        return price;
+
+    function getPoolPrice() public view returns (uint256) {
+        uint256 tokenYPrice = getOracleNumericValueFromTxMsg("AVAX");
+        uint256 primePrice = getOracleNumericValueFromTxMsg("PRIME");
+        uint256 primeToTokenYPrice = primePrice * 1e8 / tokenYPrice; // both tokenYPrice and primePrice have 8 decimals
+        return primeToTokenYPrice;
     }
 
     /**
@@ -262,14 +285,8 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
      * @return amountY Token Y Amount to return.
      */
     function _getTokenYFromTokenX(uint256 amountX) internal view returns(uint256 amountY) {
-        (uint128 reserveA, uint128 reserveB) = lbPair.getReserves();
-        if(reserveA > 0 || reserveB > 0) {
-            uint256 price = PriceHelper.convert128x128PriceToDecimal(lbPair.getPriceFromId(lbPair.getActiveId()));
-            // Swap For Y : Convert token X to token Y
-            amountY = amountX * price / 1e18;
-        } else {
-            amountY = 0;
-        }
+        uint256 poolPrice = getPoolPrice();
+        return amountX * poolPrice / 1e8;
     }
 
     /**
@@ -284,15 +301,18 @@ contract SPrime is ISPrimeTraderJoe, ReentrancyGuardUpgradeable, PendingOwnableU
         // (amountXToY != 0 || amountX == 0) for excluding the initial LP deposit
         if(FullMath.mulDiv(amountY, _REBALANCE_MARGIN, _DENOMINATOR) < diff && (amountXToY > 0 || amountX == 0)) {
             uint256 amountIn;
+            uint256 amountOut;
             {
-                uint256 price = PriceHelper.convert128x128PriceToDecimal(lbPair.getPriceFromId(lbPair.getActiveId()));
-                // Swap For X : Convert token Y to token X
-                amountIn = FullMath.mulDiv(diff / 2, 1e18, price);
+                uint256 poolPrice = getPoolPrice();
+                if(swapTokenX) {
+                    amountIn = FullMath.mulDiv(diff / 2, 1e8, poolPrice);
+                    amountOut = diff / 2;
+                } else {
+                    amountIn = diff / 2;
+                    amountOut = diff / 2 * 1e8 / poolPrice;
+                }
             }
 
-            uint256 amountOut = diff / 2; 
-
-            (amountIn, amountOut) = swapTokenX ? (amountIn, amountOut) : (amountOut, amountIn);
             IERC20[] memory tokenPathDynamic = new IERC20[](2);
             if (swapTokenX) {
                 tokenPathDynamic[0] = tokenX;
