@@ -48,7 +48,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         args: [],
     });
 
-    
+
     console.log(
         `sPrimeUniswap deployed at address: ${sPrime.address}`
     );
@@ -64,31 +64,31 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         });
     console.log(`Verified sPrimeUniswap`);
 
-    const sPrimeUniswapUPAddress = "0x04d36A9aAD2072C69E4B0Cb2A403D8a893064945";
-
-    embedCommitHash("sPrimeUniswapImpl", "./contracts/token");
-    const constructorArgs = [sPrimeUniswapUPAddress]
-    let sPrimeImpl = await deploy("sPrimeUniswapImpl", {
-        from: deployer,
-        gasLimit: 100000000,
-        args: constructorArgs,
-    });
-
-
-    console.log(
-        `sPrimeUniswapImpl deployed at address: ${sPrimeImpl.address}`
-    );
-
-    // sleep 5 seconds
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    await verifyContract(hre,
-        {
-            address: sPrimeImpl.address,
-            contract: `contracts/token/sPrimeUniswapImpl.sol:sPrimeUniswapImpl`,
-            constructorArguments: constructorArgs
-        });
-    console.log(`Verified sPrimeUniswapImpl`);
+    // const sPrimeUniswapUPAddress = "0x04d36A9aAD2072C69E4B0Cb2A403D8a893064945";
+    //
+    // embedCommitHash("sPrimeUniswapImpl", "./contracts/token");
+    // const constructorArgs = [sPrimeUniswapUPAddress]
+    // let sPrimeImpl = await deploy("sPrimeUniswapImpl", {
+    //     from: deployer,
+    //     gasLimit: 100000000,
+    //     args: constructorArgs,
+    // });
+    //
+    //
+    // console.log(
+    //     `sPrimeUniswapImpl deployed at address: ${sPrimeImpl.address}`
+    // );
+    //
+    // // sleep 5 seconds
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
+    //
+    // await verifyContract(hre,
+    //     {
+    //         address: sPrimeImpl.address,
+    //         contract: `contracts/token/sPrimeUniswapImpl.sol:sPrimeUniswapImpl`,
+    //         constructorArguments: constructorArgs
+    //     });
+    // console.log(`Verified sPrimeUniswapImpl`);
 
     // const calldata = web3Abi.encodeFunctionCall(
     //     SPrimeArtifact.abi.find((method) => method.name === "initialize"),

@@ -56,11 +56,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     embedCommitHash("sPrime", "./contracts/token");
     let sPrime = await deploy("SPrime", {
         from: deployer,
-        gasLimit: 15000000,
         args: [],
     });
 
-    
+
     console.log(
         `SPrime deployed at address: ${sPrime.address}`
     );
