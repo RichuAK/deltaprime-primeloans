@@ -153,7 +153,7 @@ library DiamondStorageLib {
         SmartLoanStorage storage sls = smartLoanStorage();
         address previousOwner = sls.contractOwner;
         sls.contractOwner = _newOwner;
-        if(sls.lastOwnershipTransferTimestamp == 0){
+        if(!sls._initialized){
             sls.lastOwnershipTransferTimestamp = block.timestamp - 24 hours; // Dont block withdrawals upon account creation
         } else {
             sls.lastOwnershipTransferTimestamp = block.timestamp;
