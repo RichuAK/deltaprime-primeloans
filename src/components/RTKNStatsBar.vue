@@ -105,7 +105,7 @@ export default {
       console.log('test');
       const modalInstance = this.openModal(RtknPledgeModal);
       modalInstance.available = this.available;
-      modalInstance.yourPledged = this.yourPledge;
+      modalInstance.yourPledge = this.yourPledge;
       modalInstance.rtknCap = this.maxCap;
       modalInstance.totalPledge = this.totalPledged;
       modalInstance.conversionRatio = this.conversionRatio;

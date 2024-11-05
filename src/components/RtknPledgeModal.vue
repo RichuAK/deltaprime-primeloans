@@ -31,10 +31,13 @@
 
       <div class="transaction-summary-wrapper">
         <TransactionResultSummaryBeta>
+          <div class="summary__title">
+            Values after transaction:
+          </div>
           <div class="summary__values">
             <div class="summary__value__pair">
               <div class="summary__label">
-                Your pledge:
+                rTKNs commited:
               </div>
               <div class="value__wrapper">
                 <div class="summary__value">
