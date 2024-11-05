@@ -12,7 +12,7 @@
       </div>
 
       <div class="modal-top-info">
-        <div class="top-info__value">{{ available | smartRound }}<span class="top-info__currency"> rTKN</span>
+        <div class="top-info__value">{{ available | smartRound(5, true) }}<span class="top-info__currency"> rTKN</span>
         </div>
       </div>
 
@@ -41,7 +41,7 @@
               </div>
               <div class="value__wrapper">
                 <div class="summary__value">
-                  {{ yourPledge + pledgeValue | smartRound }} rTKN
+                  {{ yourPledge + pledgeValue | smartRound(5, true) }} rTKN
                 </div>
               </div>
             </div>
@@ -52,7 +52,7 @@
               </div>
               <div class="value__wrapper">
                 <div class="summary__value">
-                  {{ (yourPledge + pledgeValue) * conversionRatio | smartRound }} PRIME
+                  {{ (yourPledge + pledgeValue) * conversionRatio | smartRound(5, true) }} PRIME
                 </div>
               </div>
             </div>

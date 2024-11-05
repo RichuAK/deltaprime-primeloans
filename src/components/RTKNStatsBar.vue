@@ -44,7 +44,7 @@
         </InfoIcon>
       </div>
       <div class="stat-value">
-        {{ yourPledge }} rTKN
+        {{ yourPledge }}
       </div>
     </div>
     <div class="stat__entry">
@@ -56,7 +56,7 @@
         </InfoIcon>
       </div>
       <div class="stat-value">
-        {{ eligiblePrime }}
+        {{ eligiblePrime | smartRound(5, true) }}
       </div>
     </div>
     <div class="stat__entry">
