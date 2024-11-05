@@ -57,6 +57,7 @@ export default {
       if (accounts.length > 0) {
         const mainAccount = accounts[0];
         commit('setAccount', mainAccount);
+        console.log('emitting account', mainAccount);
         rootState.serviceRegistry.accountService.emitAccountLoaded(mainAccount);
       } else {
         Vue.$toast.error("No accounts available");

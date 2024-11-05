@@ -4,11 +4,20 @@
       <div class="main-content">
         <SPrimePanel class="sprime-panel" :is-prime-account="false" :user-address="account"
                      :total-deposits-or-borrows="totalDeposit"></SPrimePanel>
+        <RTKNStatsBar :max-cap="rtknData.maxCap"
+                      :total-pledged="rtknData.totalPledged"
+                      :total-users="rtknData.totalUsers"
+                      :your-pledge="rtknData.yourPledge"
+                      :eligible-prime="rtknData.eligiblePrime"
+                      :available="rTKNBalance"
+                      :conversion-ratio="rtknData.conversionRatio">
+        </RTKNStatsBar>
         <Block :bordered="true">
           <div class="title">Savings</div>
           <NameValueBadgeBeta :name="'Your deposits'">
             {{ totalDeposit | usd }}
-            <span class="rtkn-balance" v-if="Number(rTKNBalance) > 0">Your rTKN balance: {{rTKNBalance | smartRound(2, true)}}</span>
+            <span class="rtkn-balance"
+                  v-if="Number(rTKNBalance) > 0">Your rTKN balance: {{ rTKNBalance | smartRound(2, true) }}</span>
           </NameValueBadgeBeta>
           <div class="pools">
             <div class="pools-table">
@@ -40,7 +49,8 @@ import {mapActions, mapState} from 'vuex';
 import {BehaviorSubject, combineLatest, forkJoin} from 'rxjs';
 import erc20ABI from '../../test/abis/ERC20.json';
 import ResumeBridgeModal from './ResumeBridgeModal';
-import SPrimePanel from "./SPrimePanel.vue";
+import SPrimePanel from './SPrimePanel.vue';
+import RTKNStatsBar from './RTKNStatsBar.vue';
 
 const ethers = require('ethers');
 
@@ -49,6 +59,7 @@ let TOKEN_ADDRESSES;
 export default {
   name: 'PoolsBeta',
   components: {
+    RTKNStatsBar,
     SPrimePanel,
     PoolsTableRowBeta,
     Block,
@@ -62,6 +73,7 @@ export default {
     this.initStoresWhenProviderAndAccountCreated();
     this.lifiService.setupLifi();
     this.watchActiveRoute();
+    this.setupRTKN();
   },
 
   data() {
@@ -72,10 +84,20 @@ export default {
       poolsTableHeaderConfig: null,
       depositAssetsWalletBalances$: new BehaviorSubject({}),
       rTKNBalance: 0,
+      rtknData: {}
     };
   },
   computed: {
-    ...mapState('serviceRegistry', ['providerService', 'accountService', 'poolService', 'walletAssetBalancesService', 'lifiService', 'progressBarService', 'avalancheBoostService']),
+    ...mapState('serviceRegistry', [
+      'providerService',
+      'accountService',
+      'poolService',
+      'walletAssetBalancesService',
+      'lifiService',
+      'progressBarService',
+      'avalancheBoostService',
+      'rtknService'
+    ]),
     ...mapState('network', ['account', 'accountBalance', 'provider']),
   },
 
@@ -343,7 +365,7 @@ export default {
                 sortable: false,
                 class: 'apy',
                 id: 'APY',
-                tooltip: `Deposit interest coming from borrowers${window.arbitrumChain ? " + the LTIPP grant incentives. Grant incentives are distributed weekly, directly to your wallet.<br><a href='https://forum.arbitrum.foundation/t/deltaprime-ltipp-application-final/21938' target='_blank'>More information</a>" : ''}.`
+                tooltip: `Deposit interest coming from borrowers${window.arbitrumChain ? ' + the LTIPP grant incentives. Grant incentives are distributed weekly, directly to your wallet.<br><a href=\'https://forum.arbitrum.foundation/t/deltaprime-ltipp-application-final/21938\' target=\'_blank\'>More information</a>' : ''}.`
               },
               {
                 label: 'Pool size',
@@ -375,6 +397,11 @@ export default {
       this.rTKNBalance = await this.getWalletTokenBalance(account, 'rTKN', rTKNTokenContract, 18);
     },
 
+    setupRTKN() {
+      this.rtknService.observeData().subscribe(data => {
+        this.rtknData = data;
+      })
+    },
   },
 };
 </script>
