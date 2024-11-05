@@ -13,7 +13,7 @@ contract RtknToPrimeConverter is Initializable, IRtknToPrimeConverter, OwnableUp
 
     ERC20BurnableUpgradeable public rTKN;
 
-    uint256 public constant CONVERSION_RATIO = 0.631428571428571e18; // 0.884 / 1.4; scaled by 1e18 for precision
+    uint256 public constant CONVERSION_RATIO = 0.808015513897867e18; // 1 / 0.884 / 1.4; scaled by 1e18 for precision
     uint256 public rRTKNMaxCap;
 
     Phase public currentPhase;
@@ -37,11 +37,15 @@ contract RtknToPrimeConverter is Initializable, IRtknToPrimeConverter, OwnableUp
         __Ownable_init();
         __ReentrancyGuard_init();
 
-//        _transferOwnership(0x44AfCcF712E8A097a6727B48b57c75d7A85a9B0c);
+        _transferOwnership(0xDfA6706FC583b635CD6daF0E3915901A2fBaBAaD);
 
         rTKN = ERC20BurnableUpgradeable(_rTKNAddress);
         rRTKNMaxCap = _rRTKNMaxCap;
         currentPhase = Phase.Phase1;
+    }
+
+    constructor () {
+        _disableInitializers();
     }
 
     function setRTKNMaxCap(uint256 _newMaxCap) external onlyOwner {
