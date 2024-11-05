@@ -13,7 +13,7 @@
       <div class="stat-value">{{ maxCap }} rTKN</div>
     </div>
     <div class="stat__entry">
-      <div class="stat-label" v-if="maxCap && totalPledged">
+      <div class="stat-label">
         Progress
         <InfoIcon class="info__icon"
                   :tooltip="{content: 'How close we are to completing the next protocol mission.', classes: 'info-tooltip'}"

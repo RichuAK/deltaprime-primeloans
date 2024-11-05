@@ -13,7 +13,7 @@ export default class RtknService {
   progressBarService;
   modalService;
 
-  CONVERTER_CONTRACT_ADDRESS = '0x14d199303eb846F19efa40b2e5d2581F94D4dd0b';
+  CONVERTER_CONTRACT_ADDRESS = '0xAd2E3761f071026ed1619876937a0eeC5c3c98B4';
   ABI = RTKN_TO_PRIME_CONVERTER.abi;
 
   contract;
