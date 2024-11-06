@@ -4,7 +4,8 @@
       <div class="main-content">
         <SPrimePanel class="sprime-panel" :is-prime-account="false" :user-address="account"
                      :total-deposits-or-borrows="totalDeposit"></SPrimePanel>
-        <RTKNStatsBar :max-cap="rtknData.maxCap"
+        <RTKNStatsBar v-if="arbitrumChain"
+                      :max-cap="rtknData.maxCap"
                       :total-pledged="rtknData.totalPledged"
                       :total-users="rtknData.totalUsers"
                       :your-pledge="rtknData.yourPledge"
@@ -74,6 +75,10 @@ export default {
     this.lifiService.setupLifi();
     this.watchActiveRoute();
     this.setupRTKN();
+    setTimeout(() => {
+      this.arbitrumChain = window.arbitrumChain;
+      this.$forceUpdate();
+    }, 100)
   },
 
   data() {
@@ -84,7 +89,8 @@ export default {
       poolsTableHeaderConfig: null,
       depositAssetsWalletBalances$: new BehaviorSubject({}),
       rTKNBalance: 0,
-      rtknData: {}
+      rtknData: {},
+      arbitrumChain: true,
     };
   },
   computed: {
