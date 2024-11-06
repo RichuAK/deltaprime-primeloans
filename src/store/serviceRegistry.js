@@ -30,6 +30,12 @@ import sPrimeService from "../services/sPrimeService";
 import vPrimeService from "../services/vPrimeService";
 import GlobalActionsDisableService from "../services/globalActionsDisableService";
 import AvalancheBoostService from '../services/avalancheBoostService';
+import RtknService from '../services/rtknService';
+
+const providerService = new ProviderService();
+const accountService = new AccountService();
+const progressBarService = new ProgressBarService();
+const modalService = new ModalService();
 
 export default {
   namespaced: true,
@@ -38,14 +44,14 @@ export default {
     assetDebtsExternalUpdateService: new AssetDebtsExternalUpdateService(),
     stakedExternalUpdateService: new StakedExternalUpdateService(),
     dataRefreshEventService: new DataRefreshEventService(),
-    progressBarService: new ProgressBarService(),
-    modalService: new ModalService(),
+    progressBarService: progressBarService,
+    modalService: modalService,
     healthService: new HealthService(),
     aprService: new AprService(),
     farmService: new FarmService(),
     lpService: new LpService(),
-    providerService: new ProviderService(),
-    accountService: new AccountService(),
+    providerService: providerService,
+    accountService: accountService,
     poolService: new PoolService(),
     priceService: new PriceService(),
     collateralService: new CollateralService(),
@@ -66,5 +72,6 @@ export default {
     vPrimeService: new vPrimeService(),
     globalActionsDisableService: new GlobalActionsDisableService(),
     avalancheBoostService: new AvalancheBoostService(),
+    rtknService: new RtknService(providerService, accountService, progressBarService, modalService),
   },
 };

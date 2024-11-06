@@ -19,18 +19,9 @@ const SLIM_BAR_GAUGE_WIDTH = 53;
 export default {
   name: 'BarGaugeBeta',
   props: {
-    min: {
-      type: Number,
-      required: true,
-    },
-    max: {
-      type: Number,
-      required: true,
-    },
-    value: {
-      type: Number,
-      required: true,
-    },
+    min: {},
+    max: {},
+    value: {},
     width: {
       type: Number,
       required: false,

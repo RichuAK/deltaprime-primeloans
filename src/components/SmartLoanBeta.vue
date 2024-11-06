@@ -101,7 +101,7 @@ import TransactionHistory from './TransactionHistory';
 import Stats from './stats/Stats.vue';
 import LPTab from "./LPTab.vue";
 import Zaps from "./Zaps.vue";
-import LTIPStatsBar from './LTIPStatsBar.vue';
+import LTIPStatsBar from './RTKNStatsBar.vue';
 import SPrimePanel from './SPrimePanel.vue';
 
 const TABS = [

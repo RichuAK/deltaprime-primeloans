@@ -52,6 +52,7 @@ export default {
   },
   methods: {
     clicked() {
+      console.log('clicked');
       if (!(this.disabled || this.waiting)) {
         this.$emit('click', true);
       }
