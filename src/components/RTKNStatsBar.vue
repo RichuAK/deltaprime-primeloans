@@ -6,7 +6,7 @@
       <div class="stat-label">
         Total rTKN Cap
         <InfoIcon class="info__icon"
-                  :tooltip="{content: 'The total dollar value of all positions that are eligible for incentives.', classes: 'info-tooltip'}"
+                  :tooltip="{content: 'The maximum number of rTKNs that can be committed by all participants', classes: 'info-tooltip'}"
                   :classes="'info-tooltip'">
         </InfoIcon>
       </div>
@@ -14,32 +14,28 @@
     </div>
     <div class="stat__entry">
       <div class="stat-label">
-        Progress
+        Filled
         <InfoIcon class="info__icon"
-                  :tooltip="{content: 'How close we are to completing the next protocol mission.', classes: 'info-tooltip'}"
+                  :tooltip="{content: 'Currently committed rTKNs. If this crosses 100%, every participant will be commit a portion of their committed rTKNs, equal to their share of the total commitments.', classes: 'info-tooltip'}"
                   :classes="'info-tooltip'">
         </InfoIcon>
       </div>
       <div class="stat-value">
-        <bar-gauge-beta v-tooltip="{content: `Progress ${totalPledged} / ${maxCap} rTKN`, classes: 'info-tooltip'}"
+        <bar-gauge-beta v-tooltip="{content: `Filled ${totalPledged} / ${maxCap} rTKN`, classes: 'info-tooltip'}"
                         :min="0" :max="maxCap" :value="totalPledged" :width="108" :green-on-completion="true"></bar-gauge-beta>
       </div>
     </div>
     <div class="stat__entry">
       <div class="stat-label">
         Total participants
-        <InfoIcon class="info__icon"
-                  :tooltip="{content: 'The dollar value you receive ARB emissions over. This is calculated as: Total LP/Farms deposits - Collateral value.', classes: 'info-tooltip'}"
-                  :classes="'info-tooltip'">
-        </InfoIcon>
       </div>
       <div class="stat-value">{{ totalUsers }}</div>
     </div>
     <div class="stat__entry">
       <div class="stat-label">
-        rTKNs committed
+        my committed rTKNs
         <InfoIcon class="info__icon"
-                  :tooltip="{content: 'The APR you receive over your eligible TVL.', classes: 'info-tooltip'}"
+                  :tooltip="{content: 'The number of rTKNs you redeem if 100% of your rTKNs are sold', classes: 'info-tooltip'}"
                   :classes="'info-tooltip'">
         </InfoIcon>
       </div>
@@ -49,9 +45,9 @@
     </div>
     <div class="stat__entry">
       <div class="stat-label">
-        Eligible PRIME
+        PRIME received
         <InfoIcon class="info__icon"
-                  :tooltip="{content: 'The boost APR received if you would borrow enough to get health to 10%, and put your total value into LP/Farms.', classes: 'info-tooltip'}"
+                  :tooltip="{content: 'The number of vested PRIME you receive if 100% of your rTKNs are sold', classes: 'info-tooltip'}"
                   :classes="'info-tooltip'">
         </InfoIcon>
       </div>

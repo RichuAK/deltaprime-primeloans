@@ -7,7 +7,9 @@
 
       <div class="modal-top-info-bar-wrapper">
         <div class="modal-top-info-bar">
-          cap exceeded scaled down disclaimer
+          If the rTKN cap is not crossed by Wednesday 13th, you will receive 100% of your allocated PRIME.
+          If it is crossed, you will receive the PRIME that reflects your share of the pool.
+          The excess of committed rTKNs will be returned.
         </div>
       </div>
 
@@ -34,6 +36,7 @@
           <div class="summary__title">
             Values after transaction:
           </div>
+          <div class="summary__horizontal__divider"></div>
           <div class="summary__values">
             <div class="summary__value__pair">
               <div class="summary__label">
@@ -151,40 +154,46 @@ export default {
 @import "~@/styles/variables";
 @import "~@/styles/modal";
 
-.value__wrapper {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+.rtkn-pledge-modal-component {
+  .value__wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 
-  .asset__icon {
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-    opacity: var(--asset-table-row__icon-opacity);
+    .asset__icon {
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      opacity: var(--asset-table-row__icon-opacity);
+    }
+
+    .summary__value:last-child {
+      margin-left: 5px;
+    }
   }
 
-  .summary__value:last-child {
-    margin-left: 5px;
+  .reverse-swap-button {
+    position: relative;
+    margin: 28px auto;
+    height: 40px;
+    width: 40px;
+    border: var(--swap-modal__reverse-swap-button-border);
+    background: var(--swap-modal__reverse-swap-button-background);
+    box-shadow: var(--swap-modal__reverse-swap-button-box-shadow);
+    border-radius: 999px;
+    pointer-events: none;
+
+    .reverse-swap-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--swap-modal__reverse-swap-icon-color);
+    }
   }
-}
 
-.reverse-swap-button {
-  position: relative;
-  margin: 28px auto;
-  height: 40px;
-  width: 40px;
-  border: var(--swap-modal__reverse-swap-button-border);
-  background: var(--swap-modal__reverse-swap-button-background);
-  box-shadow: var(--swap-modal__reverse-swap-button-box-shadow);
-  border-radius: 999px;
-  pointer-events: none;
-
-  .reverse-swap-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--swap-modal__reverse-swap-icon-color);
+  .modal-top-info-bar {
+    text-align: center;
   }
 }
 

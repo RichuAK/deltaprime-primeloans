@@ -46,7 +46,7 @@ export default class RtknService {
     const yourPledge = Number(formatUnits(await this.contract.userrTKNPledged(this.account), 18))
     const eligiblePrime = Number(formatUnits(await this.contract.previewFuturePrimeAmountBasedOnPledgedAmountForUser(this.account), 18))
     // const conversionRatio = Number(formatUnits(await this.contract.CONVERSION_RATIO(), 18))
-    const conversionRatio = 0.631428571428571;
+    const conversionRatio = 0.808015513897867;
 
     this.data$.next({
       maxCap,
