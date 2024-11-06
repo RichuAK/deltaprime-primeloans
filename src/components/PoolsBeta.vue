@@ -76,11 +76,11 @@ export default {
     this.watchActiveRoute();
     setTimeout(() => {
       this.arbitrumChain = window.arbitrumChain;
+      if (window.arbitrumChain) {
+        this.setupRTKN();
+      }
       this.$forceUpdate();
     }, 100)
-    if (window.arbitrumChain) {
-      this.setupRTKN();
-    }
   },
 
   data() {
@@ -400,7 +400,6 @@ export default {
       this.rtknService.observeData().subscribe(data => {
         console.log(data);
         this.rtknData = data;
-        this.$forceUpdate();
       })
     },
   },
