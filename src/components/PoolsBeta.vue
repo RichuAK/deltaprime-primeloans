@@ -10,7 +10,7 @@
                       :total-users="rtknData.totalUsers"
                       :your-pledge="rtknData.yourPledge"
                       :eligible-prime="rtknData.eligiblePrime"
-                      :available="rTKNBalance"
+                      :available="rtknData.rtknBalance"
                       :conversion-ratio="rtknData.conversionRatio">
         </RTKNStatsBar>
         <Block :bordered="true">
@@ -18,7 +18,7 @@
           <NameValueBadgeBeta :name="'Your deposits'">
             {{ totalDeposit | usd }}
             <span class="rtkn-balance"
-                  v-if="Number(rTKNBalance) > 0">Your rTKN balance: {{ rTKNBalance | smartRound(2, true) }}</span>
+                  v-if="Number(rtknData.rtknBalance) > 0">Your rTKN balance: {{ rtknData.rtknBalance | smartRound(2, true) }}</span>
           </NameValueBadgeBeta>
           <div class="pools">
             <div class="pools-table">
@@ -74,11 +74,13 @@ export default {
     this.initStoresWhenProviderAndAccountCreated();
     this.lifiService.setupLifi();
     this.watchActiveRoute();
-    this.setupRTKN();
     setTimeout(() => {
       this.arbitrumChain = window.arbitrumChain;
       this.$forceUpdate();
     }, 100)
+    if (window.arbitrumChain) {
+      this.setupRTKN();
+    }
   },
 
   data() {
@@ -88,7 +90,6 @@ export default {
       poolsList: null,
       poolsTableHeaderConfig: null,
       depositAssetsWalletBalances$: new BehaviorSubject({}),
-      rTKNBalance: 0,
       rtknData: {},
       arbitrumChain: true,
     };
@@ -121,9 +122,6 @@ export default {
           this.poolStoreSetup();
           this.sPrimeStoreSetup();
           this.setupPoolsTableHeaderConfig();
-          if (window.arbitrumChain) {
-            this.getRTKNBalance(provider, account)
-          }
         });
     },
 
@@ -398,14 +396,11 @@ export default {
           };
     },
 
-    async getRTKNBalance(provider, account) {
-      const rTKNTokenContract = new ethers.Contract(config.RTKN_ADDRESS, erc20ABI, provider.getSigner());
-      this.rTKNBalance = await this.getWalletTokenBalance(account, 'rTKN', rTKNTokenContract, 18);
-    },
-
     setupRTKN() {
       this.rtknService.observeData().subscribe(data => {
+        console.log(data);
         this.rtknData = data;
+        this.$forceUpdate();
       })
     },
   },

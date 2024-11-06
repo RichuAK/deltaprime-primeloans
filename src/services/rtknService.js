@@ -48,14 +48,18 @@ export default class RtknService {
     // const conversionRatio = Number(formatUnits(await this.contract.CONVERSION_RATIO(), 18))
     const conversionRatio = 0.808015513897867;
 
+    const rtknBalance = formatUnits(await this.rtknTokenContract.balanceOf(this.account), 18);
+    console.log('rtknBalance', rtknBalance);
+
     this.data$.next({
       maxCap,
       totalPledged,
       totalUsers,
       yourPledge,
       eligiblePrime,
-      conversionRatio
-    })
+      conversionRatio,
+      rtknBalance
+    });
   }
 
   async pledge(amount) {

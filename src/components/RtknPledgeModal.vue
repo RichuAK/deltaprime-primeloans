@@ -10,6 +10,7 @@
           If the rTKN cap is not crossed by Wednesday 13th, you will receive 100% of your allocated PRIME.
           If it is crossed, you will receive the PRIME that reflects your share of the pool.
           The excess of committed rTKNs will be returned.
+          <a href="https://discord.com/channels/889510301421166643/912702114252329060/1303715753735753780" target="_blank">Read more.</a>
         </div>
       </div>
 
@@ -40,7 +41,7 @@
           <div class="summary__values">
             <div class="summary__value__pair">
               <div class="summary__label">
-                rTKNs commited:
+                my committed rTKNs:
               </div>
               <div class="value__wrapper">
                 <div class="summary__value">
@@ -51,7 +52,7 @@
             <div class="summary__divider divider--long"></div>
             <div class="summary__value__pair">
               <div class="summary__label">
-                ~Eligible PRIME
+                PRIME received
               </div>
               <div class="value__wrapper">
                 <div class="summary__value">
@@ -64,7 +65,7 @@
       </div>
 
       <div class="button-wrapper">
-        <Button :label="'Pledge'"
+        <Button :label="'Convert'"
                 v-on:click="submit()"
                 :waiting="transactionOngoing"
                 :disabled="inputValidationError">
@@ -194,6 +195,15 @@ export default {
 
   .modal-top-info-bar {
     text-align: center;
+
+    a, a:visited {
+      color: inherit;
+      font-weight: 700;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 }
 

@@ -21,7 +21,7 @@
         </InfoIcon>
       </div>
       <div class="stat-value">
-        <bar-gauge-beta v-tooltip="{content: `Filled ${totalPledged} / ${maxCap} rTKN`, classes: 'info-tooltip'}"
+        <bar-gauge-beta v-tooltip="{content: `Filled ${totalPledged | smartRound(2, true)} / ${maxCap} rTKN`, classes: 'info-tooltip'}"
                         :min="0" :max="maxCap" :value="totalPledged" :width="108" :green-on-completion="true"></bar-gauge-beta>
       </div>
     </div>
@@ -72,6 +72,7 @@ import Button from './Button.vue';
 import erc20ABI from '../../test/abis/ERC20.json';
 import RtknPledgeModal from './RtknPledgeModal.vue';
 import {mapState} from 'vuex';
+import {smartRound} from '../utils/calculate';
 const ethers = require('ethers');
 
 
@@ -97,6 +98,7 @@ export default {
     ...mapState('serviceRegistry', ['accountService', 'rtknService']),
   },
   methods: {
+    smartRound,
     async openPledgeModal() {
       console.log('test');
       const modalInstance = this.openModal(RtknPledgeModal);

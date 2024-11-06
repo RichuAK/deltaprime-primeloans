@@ -26,8 +26,8 @@
       Prime Accounts are paused because of the recent exploit on the Savings side. Prime Accounts are safe.
     </Banner>
     <Banner v-if="showArbitrumDepositorBanner" background="green-accent" :closable="true">
-      rTKN - PRIME conversion will open up 6 November, 2pm CET.
-      <a class="banner-link" href="https://discord.com/channels/889510301421166643/912702114252329060/1301169054350053407"
+      rTKN - PRIME conversion submissions close at 13th of November, 2pm CET.
+      <a class="banner-link" href="https://discord.com/channels/889510301421166643/912702114252329060/1303715753735753780"
          target="_blank">
         <b>
           Read more.
