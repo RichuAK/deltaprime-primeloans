@@ -54,23 +54,23 @@ const wombatApyAggregator = async (event) => {
 
         console.log(identifier, poolTvl, poolApy);
 
-        const params = {
-          TableName: process.env.APY_TABLE,
-          Key: {
-            id: identifier
-          },
-          AttributeUpdates: {
-            lp_tvl: {
-              Value: Number(poolTvl) ? poolTvl : 0,
-              Action: "PUT"
-            },
-            lp_apy: {
-              Value: Number(poolApy) ? poolApy / 100 : 0,
-              Action: "PUT"
-            }
-          }
-        };
-        await dynamoDb.update(params).promise();
+        // const params = {
+        //   TableName: process.env.APY_TABLE,
+        //   Key: {
+        //     id: identifier
+        //   },
+        //   AttributeUpdates: {
+        //     lp_tvl: {
+        //       Value: Number(poolTvl) ? poolTvl : 0,
+        //       Action: "PUT"
+        //     },
+        //     lp_apy: {
+        //       Value: Number(poolApy) ? poolApy / 100 : 0,
+        //       Action: "PUT"
+        //     }
+        //   }
+        // };
+        // await dynamoDb.update(params).promise();
       } catch (error) {
         console.log(error);
       }

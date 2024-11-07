@@ -1,7 +1,7 @@
 module.exports.newChrome = async () => {
   let browser;
 
-  if (process.env.IS_LOCAL) {
+  if (true) {
     const puppeteer = require("puppeteer");
     browser = await puppeteer.launch({headless: false});
   } else {
