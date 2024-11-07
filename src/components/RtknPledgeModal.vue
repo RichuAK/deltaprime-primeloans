@@ -7,10 +7,9 @@
 
       <div class="modal-top-info-bar-wrapper">
         <div class="modal-top-info-bar">
-          If the rTKN cap is not crossed by Wednesday 13th, you will receive 100% of your allocated PRIME.
-          If it is crossed, you will receive the PRIME that reflects your share of the pool.
-          The excess of committed rTKNs will be returned.
-          <a href="https://discord.com/channels/889510301421166643/912702114252329060/1303715753735753780" target="_blank">Read more.</a>
+          Currently committed rTKNs. If more than 100% is committed, each participant will receive a reduced amount of PRIME,
+          proportional to the percentage over 100%. For example: If double the allotted rTKNs is committed (200%),
+          each participant will have 50% of their rTKNs converted to PRIME. They will retain the other 50% as rTKNs.
         </div>
       </div>
 
