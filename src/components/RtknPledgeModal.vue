@@ -22,8 +22,7 @@
       <CurrencyInput v-on:newValue="pledgeValueChange"
                      :symbol="'rTKN'"
                      :logo="'rtkn.svg'"
-                     :validators="validators"
-                     :max="available">
+                     :validators="validators">
       </CurrencyInput>
 
       <div class="reverse-swap-button">
