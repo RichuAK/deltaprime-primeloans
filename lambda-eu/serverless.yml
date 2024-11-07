@@ -18,7 +18,7 @@ service: deltaprime-eu-cloud
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
-frameworkVersion: "3"
+frameworkVersion: "4"
 
 provider:
   name: aws
@@ -76,9 +76,6 @@ resources:
         StreamSpecification:
           StreamViewType: "NEW_AND_OLD_IMAGES"
         TableName: ${self:provider.environment.APY_TABLE}
-
-plugins:
-  - serverless-prune-plugin
 
 package:
   exclude:
