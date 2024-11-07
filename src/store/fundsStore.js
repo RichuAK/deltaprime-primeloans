@@ -1284,6 +1284,8 @@ export default {
 
       const isLiquidityValuable = Number(lpAsset.primaryBalance) > 0 || Number(lpAsset.secondaryBalance) > 0;
 
+      console.log('loan bin ids', loanBinIds);
+
       lpAsset.binIds = isLiquidityValuable ? loanBinIds : []; // bin Ids where loan has liquidity for a LB pair
       lpAsset.accountBalances = isLiquidityValuable ? accountBalances : []; // balances of account owned bins (the same order as binIds)
       lpAsset.accountBalancesPrimary = isLiquidityValuable ? accountBalancesPrimary : []; // balances of account owned bins (the same order as binIds)
@@ -2890,7 +2892,8 @@ export default {
 
       const transaction = await wrappedContract[removeLiquidityRequest.method](
         removeLiquidityRequest.routerAddress,
-        removeLiquidityRequest.removeLiquidityInput
+        removeLiquidityRequest.removeLiquidityInput,
+        removeLiquidityRequest.forceTransaction ? {gasLimit: 9999999} : {}
       );
 
       rootState.serviceRegistry.progressBarService.requestProgressBar();

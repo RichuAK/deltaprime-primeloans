@@ -565,6 +565,7 @@ export default {
       modalInstance.activeId = this.activeId;
       modalInstance.binStep = this.lpToken.binStep;
       modalInstance.binIds = this.lpToken.binIds;
+      console.log(this.lpToken.binIds);
       modalInstance.$on('REMOVE_LIQUIDITY', async removeLiquidityEvent => {
         if (this.smartLoanContract) {
           const removeLiquidityInput = await this.traderJoeService.getRemoveLiquidityParameters(
@@ -586,7 +587,8 @@ export default {
             remainingBinIds: removeLiquidityEvent.remainingBinIds,
             removeLiquidityInput,
             lpToken: this.lpToken,
-            routerAddress: this.lpToken.routerAddress
+            routerAddress: this.lpToken.routerAddress,
+            forceTransaction: removeLiquidityEvent.forceTransaction
           };
 
           this.handleTransaction(this.removeLiquidityTraderJoeV2Pool, {removeLiquidityRequest}, () => {

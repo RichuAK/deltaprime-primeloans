@@ -1,6 +1,6 @@
 <template>
   <button class="btn" :class="[disabled ? 'disabled': '', waiting ? 'disabled waiting': '', 'purple']"
-          @click="clicked()"
+          @click="clicked"
           :style="variant && variants[variant]">
     <div class="btn-label">
       <img
@@ -51,10 +51,10 @@ export default {
     }
   },
   methods: {
-    clicked() {
-      console.log('clicked');
+    clicked(event) {
+      const metaKey = event.metaKey || event.ctrlKey;
       if (!(this.disabled || this.waiting)) {
-        this.$emit('click', true);
+        this.$emit('click', metaKey ? {value: true, metaKey} : true);
       }
     }
   },
