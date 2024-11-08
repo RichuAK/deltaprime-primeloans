@@ -31,6 +31,7 @@ import vPrimeService from "../services/vPrimeService";
 import GlobalActionsDisableService from "../services/globalActionsDisableService";
 import AvalancheBoostService from '../services/avalancheBoostService';
 import RtknService from '../services/rtknService';
+import BullScoreService from "../services/bullScoreService";
 
 const providerService = new ProviderService();
 const accountService = new AccountService();
@@ -73,5 +74,6 @@ export default {
     globalActionsDisableService: new GlobalActionsDisableService(),
     avalancheBoostService: new AvalancheBoostService(),
     rtknService: new RtknService(providerService, accountService, progressBarService, modalService),
+    bullScoreService: new BullScoreService(),
   },
 };

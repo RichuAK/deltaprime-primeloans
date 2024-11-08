@@ -188,7 +188,8 @@ export default {
       'collateralService',
       'debtService',
       'ggpIncentivesService',
-      'ltipService'
+      'ltipService',
+      'bullScoreService',
     ]),
     ...mapState('network', ['account']),
     primeAccountsBlocked() {
@@ -408,6 +409,7 @@ export default {
     watchCollateral() {
       this.collateralService.observeCollateral().subscribe(collateral => {
         this.collateral = collateral;
+        this.bullScoreService.setCollateral(collateral)
       });
     },
 
