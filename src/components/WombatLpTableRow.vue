@@ -198,8 +198,6 @@ export default {
       'noSmartLoan',
       'concentratedLpAssets',
       'concentratedLpBalances',
-      'levelLpAssets',
-      'levelLpBalances',
       'traderJoeV2LpAssets',
       'balancerLpAssets',
       'balancerLpBalances',
@@ -356,8 +354,6 @@ export default {
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpAssets = this.concentratedLpAssets;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.traderJoeV2LpAssets = this.traderJoeV2LpAssets;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
@@ -421,8 +417,6 @@ export default {
       modalInstance.wombatYYFarmsBalances = this.wombatYYFarmsBalances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
       modalInstance.farms = this.farms;
@@ -491,8 +485,6 @@ export default {
       modalInstance.wombatYYFarmsBalances = this.wombatYYFarmsBalances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
       modalInstance.farms = this.farms;
@@ -540,8 +532,6 @@ export default {
       modalInstance.lpAssets = this.lpAssets;
       modalInstance.concentratedLpAssets = this.concentratedLpAssets;
       modalInstance.traderJoeV2LpAssets = this.traderJoeV2LpAssets;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
       modalInstance.gmxV2Assets = this.gmxV2Assets;

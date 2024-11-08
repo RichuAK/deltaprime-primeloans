@@ -185,8 +185,6 @@ export default {
     penpieLpBalances: {},
     wombatLpAssets: {},
     wombatLpBalances: {},
-    levelLpAssets: {},
-    levelLpBalances: {},
     balancerLpAssets: {},
     balancerLpBalances: {},
     gmxV2Assets: {},
@@ -322,15 +320,6 @@ export default {
         tokens.push({
           price: data.price,
           balance: parseFloat(this.concentratedLpBalances[symbol]),
-          borrowed: 0,
-          debtCoverage: data.debtCoverage
-        });
-      }
-
-      for (const [symbol, data] of Object.entries(this.levelLpAssets)) {
-        tokens.push({
-          price: data.price,
-          balance: parseFloat(this.levelLpBalances[symbol]),
           borrowed: 0,
           debtCoverage: data.debtCoverage
         });

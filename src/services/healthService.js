@@ -25,7 +25,6 @@ export default class HealthService {
     lpAssets, lpBalances,
     concentratedLpAssets, concentratedLpBalances,
     balancerLpAssets, balancerLpBalances,
-    levelAssets, levelBalances,
     gmxV2Assets, gmxV2Balances,
     penpieLpAssets, penpieLpBalances,
     wombatLpAssets, wombatLpBalances, wombatYYFarmsBalances,
@@ -81,18 +80,6 @@ export default class HealthService {
           debtCoverage: data.debtCoverage,
           symbol: symbol
         });
-      }
-
-      if (levelAssets) {
-        for (const [symbol, data] of Object.entries(levelAssets)) {
-          tokens.push({
-            price: redstonePriceData[symbol] ? redstonePriceData[symbol][0].dataPoints[0].value : 0,
-            balance: parseFloat(levelBalances[symbol]),
-            borrowed: 0,
-            debtCoverage: data.debtCoverage,
-            symbol: symbol
-          });
-        }
       }
 
       if (balancerLpAssets) {

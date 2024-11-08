@@ -380,11 +380,6 @@ export default {
     },
     WOMBAT_LP_ASSETS_CONFIG: {},
     WOMBAT_LP_ASSETS: {},
-    LEVEL_LP_ASSETS_CONFIG: {
-        "arbJnrLLP": {name: "Junior", symbol: "arbJnrLLP", pid: 2, short: "Jnr", decimals: 18, address: addresses.arbJnrLLP, debtCoverage: 0.83333333333, balanceMethod: "levelJnrBalance", groupIdentifier: 'STKD_JNR_LLP_GROUP', underlyingAssets: ['BTC', 'ETH', 'ARB', 'USDT', 'USDC'], link: 'https://app.level.finance/liquidity/junior-tranche/buy', disableAddTokenButton: true},
-        "arbMzeLLP": {name: "Mezzanine", symbol: "arbMzeLLP", pid: 1, short: "Mze", decimals: 18, address: addresses.arbMzeLLP, debtCoverage: 0.83333333333, balanceMethod: "levelMzeBalance", groupIdentifier: 'STKD_MZE_LLP_GROUP', underlyingAssets: ['BTC', 'ETH', 'USDT', 'USDC'], link: 'https://app.level.finance/liquidity/mezzanine-tranche/buy', disableAddTokenButton: true},
-        "arbSnrLLP": {name: "Senior", symbol: "arbSnrLLP", pid: 0, short: "Snr", decimals: 18, address: addresses.arbSnrLLP, debtCoverage: 0.83333333333, balanceMethod: "levelSnrBalance", groupIdentifier: 'STKD_SNR_LLP_GROUP', underlyingAssets: ['BTC', 'ETH', 'USDT', 'USDC'], link: 'https://app.level.finance/liquidity/senior-tranche/buy'},
-    },
     GMX_V2_ASSETS_CONFIG: {
         "GM_ETH_WETH": {isGMXPlus: true, name: "ETH+", symbol: "GM_ETH_WETH", short: "GM", decimals: 18, address: addresses.GM_ETH_WETH, debtCoverage: 0.83333333333, longToken: 'ETH', shortToken: 'ETH', indexTokenAddress: addresses.ETH, link: 'https://app.gmx.io/#/stats', addMethod: 'depositEthGmxV2Plus', removeMethod: 'withdrawEthGmxV2Plus'},
         "GM_BTC_WBTC": {isGMXPlus: true, name: "BTC+", symbol: "GM_BTC_WBTC", short: "GM", logoExt: "png", decimals: 18, address: addresses.GM_BTC_WBTC, debtCoverage: 0.83333333333, longToken: 'BTC', shortToken: 'BTC', indexTokenAddress: addresses.BTC, link: 'https://app.gmx.io/#/stats', addMethod: 'depositBtcGmxV2Plus', removeMethod: 'withdrawBtcGmxV2Plus'},

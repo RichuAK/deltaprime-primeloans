@@ -53,8 +53,6 @@ export default {
       'traderJoeV2LpAssets',
       'lpBalances',
       'concentratedLpBalances',
-      'levelLpAssets',
-      'levelLpBalances',
       'balancerLpAssets',
       'balancerLpBalances',
       'penpieLpBalances',

@@ -213,8 +213,6 @@ export default {
       concentratedLpAssets: {},
       traderJoeV2LpAssets: {},
       gmxV2Assets: {},
-      levelLpAssets: {},
-      levelLpBalances: {},
       penpieLpAssets: {},
       penpieLpBalances: {},
       wombatLpAssets: {},
@@ -539,15 +537,6 @@ export default {
           borrowed: 0,
           debtCoverage: data.debtCoverage,
           symbol: symbol
-        });
-      }
-
-      for (const [symbol, data] of Object.entries(this.levelLpAssets)) {
-        tokens.push({
-          price: data.price,
-          balance: parseFloat(this.levelLpBalances[symbol]),
-          borrowed: 0,
-          debtCoverage: data.debtCoverage
         });
       }
 

@@ -9,7 +9,6 @@ export const ActionSection = {
   'GMXV2': 'GMXV2',
   'PENPIE': 'PENPIE',
   'TRADER_JOE_LP': 'TRADER_JOE_LP',
-  'LEVEL_LP': 'LEVEL_LP',
   'BALANCER_LP': 'BALANCER_LP',
   'CONCENTRATED_LP': 'CONCENTRATED_LP',
   'ZAPS': 'ZAPS',
@@ -79,14 +78,6 @@ export default class GlobalActionsDisableService {
     REMOVE_LIQUIDITY: false,
     CLAIM_TRADERJOE_REWARDS: false,
   });
-  levelLpActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    PROVIDE_LIQUIDITY: false,
-    WITHDRAW: false,
-    REMOVE_LIQUIDITY: false,
-    CLAIM_LEVEL_REWARDS: false,
-    PARTNER_PROFILE: false,
-  });
   balancerLpActions$ = new BehaviorSubject({
     FUND_AND_STAKE: false,
     STAKE: false,
@@ -124,7 +115,6 @@ export default class GlobalActionsDisableService {
     'GMXV2': this.gmxV2Actions$,
     'PENPIE': this.penpieActions$,
     'TRADER_JOE_LP': this.traderJoeLpActions$,
-    'LEVEL_LP': this.levelLpActions$,
     'BALANCER_LP': this.balancerLpActions$,
     'CONCENTRATED_LP': this.concentratedLpActions$,
     'ZAPS': this.zapsActions$,
@@ -140,7 +130,6 @@ export default class GlobalActionsDisableService {
     this.gmxV2Actions$,
     this.penpieActions$,
     this.traderJoeLpActions$,
-    this.levelLpActions$,
     this.balancerLpActions$,
     this.concentratedLpActions$,
     this.zapsActions$,

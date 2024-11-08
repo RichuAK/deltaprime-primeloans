@@ -183,8 +183,6 @@ export default {
       'concentratedLpAssets',
       'concentratedLpBalances',
       'traderJoeV2LpAssets',
-      'levelLpAssets',
-      'levelLpBalances',
       'penpieLpBalances',
       'penpieLpAssets',
       'balancerLpAssets',
@@ -256,8 +254,6 @@ export default {
       modalInstance.penpieLpBalances = this.penpieLpBalances;
       modalInstance.wombatLpAssets = this.wombatLpAssets;
       modalInstance.wombatLpBalances = this.wombatLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
       modalInstance.gmxV2Assets = this.gmxV2Assets;
@@ -304,8 +300,6 @@ export default {
       modalInstance.concentratedLpAssets = this.concentratedLpAssets;
       modalInstance.traderJoeV2LpAssets = this.traderJoeV2LpAssets;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.penpieLpAssets = this.penpieLpAssets;
       modalInstance.penpieLpBalances = this.penpieLpBalances;
       modalInstance.wombatLpAssets = this.wombatLpAssets;

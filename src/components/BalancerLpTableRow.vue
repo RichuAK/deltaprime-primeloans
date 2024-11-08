@@ -195,8 +195,6 @@ export default {
       'concentratedLpBalances',
       'concentratedLpAssets',
       'traderJoeV2LpAssets',
-      'levelLpAssets',
-      'levelLpBalances',
       'balancerLpAssets',
       'balancerLpBalances',
       'noSmartLoan'

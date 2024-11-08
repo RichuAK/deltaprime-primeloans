@@ -277,13 +277,11 @@ export default {
       'fullLoanStatus',
       'assetBalances',
       'concentratedLpBalances',
-      'levelLpBalances',
       'gmxV2Balances',
       'assets',
       'debtsPerAsset',
       'lpAssets',
       'concentratedLpAssets',
-      'levelLpAssets',
       'gmxV2Assets',
       'traderJoeV2LpAssets',
       'balancerLpAssets',
@@ -614,8 +612,6 @@ export default {
       modalInstance.assetBalances = this.assetBalances;
       modalInstance.lpAssets = this.lpAssets;
       modalInstance.lpBalances = this.lpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.gmxV2Assets = this.gmxV2Assets;
       modalInstance.gmxV2Balances = this.gmxV2Balances;
       modalInstance.penpieLpAssets = this.penpieLpAssets;
@@ -670,8 +666,6 @@ export default {
       modalInstance.gmxV2Balances = this.gmxV2Balances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
       modalInstance.penpieLpAssets = this.penpieLpAssets;
@@ -730,8 +724,6 @@ export default {
       modalInstance.wombatYYFarmsBalances = this.wombatYYFarmsBalances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
       modalInstance.farms = this.farms;
@@ -845,8 +837,6 @@ export default {
       modalInstance.gmxV2Balances = this.gmxV2Balances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
       modalInstance.balancerLpAssets = this.balancerLpAssets;
       modalInstance.penpieLpAssets = this.penpieLpAssets;

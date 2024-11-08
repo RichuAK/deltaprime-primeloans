@@ -132,8 +132,6 @@ export default {
     lpBalances: {},
     concentratedLpAssets: {},
     concentratedLpBalances: {},
-    levelLpAssets: {},
-    levelLpBalances: {},
     penpieLpAssets: {},
     penpieLpBalances: {},
     wombatLpAssets: {},
@@ -244,16 +242,6 @@ export default {
 
       for (const [symbol, data] of Object.entries(this.concentratedLpAssets)) {
         let balance = parseFloat(this.concentratedLpBalances[symbol]);
-
-        if (symbol === this.asset.symbol) {
-          balance -= withdrawn;
-        }
-
-        tokens.push({ price: data.price, balance: balance, borrowed: 0, debtCoverage: data.debtCoverage});
-      }
-
-      for (const [symbol, data] of Object.entries(this.levelLpAssets)) {
-        let balance = parseFloat(this.levelLpBalances[symbol]);
 
         if (symbol === this.asset.symbol) {
           balance -= withdrawn;

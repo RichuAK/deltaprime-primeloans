@@ -36,17 +36,6 @@
                             :lp-token="lpToken" :lp-tokens="balancerLpTokens"></BalancerLpTableRow>
       </div>
     </div>
-    <div class="lp-tokens" v-if="Object.keys(levelLpTokens).length && showLevel">
-      <div class="lp-table level" v-if="levelLpTokens">
-        <TableHeader :config="levelLpTableHeaderConfig"></TableHeader>
-        <div class="lp-table__warning">
-          Junior and Mezzanine have been deprecated, and Senior is upgraded. Please reallocate funds from the Junior and
-          Mezzanine tranche.
-        </div>
-        <LevelLpTableRow v-for="(lpToken, index) in levelLpTokens" v-bind:key="index" :index="index"
-                         :lp-token="lpToken"></LevelLpTableRow>
-      </div>
-    </div>
     <div class="lp-tokens" v-if="Object.keys(concentratedLpTokens).length && concentratedLpBalances && Object.values(concentratedLpBalances).some(val => val > 0)">
       <div class="lp-table">
         <TableHeader :config="concentratedLpTableHeaderConfig"></TableHeader>
@@ -83,7 +72,6 @@ import config from '../config';
 import TraderJoeLpTableRow from './TraderJoeLpTableRow.vue';
 import {mapState} from 'vuex';
 import Paginator from "./Paginator.vue";
-import LevelLpTableRow from "./LevelLpTableRow.vue";
 import GmxV2LpTableRow from "./GmxV2LpTableRow.vue";
 import GmIncentivesTableRow from "./GmIncentivesTableRow.vue";
 import BalancerLpTableRow from "./BalancerLpTableRow.vue";
@@ -100,7 +88,6 @@ export default {
     BalancerLpTableRow,
     GmIncentivesTableRow,
     GmxV2LpTableRow,
-    LevelLpTableRow,
     Paginator, TraderJoeLpTableRow, LpTableRow, AssetFilter, ConcentratedLpTableRow, TableHeader
   },
   data() {
@@ -120,9 +107,6 @@ export default {
       penpieLpTableHeaderConfig: null,
       wombatLpTokens: config.WOMBAT_LP_ASSETS_CONFIG,
       wombatLpTableHeaderConfig: null,
-      levelLpTokens: config.LEVEL_LP_ASSETS_CONFIG,
-      levelLpTableHeaderConfig: null,
-      showLevel: false,
       gmIncentivesTableHeaderConfig: null,
       selectedLpTokens: [] = [],
       assets: null,
@@ -137,7 +121,6 @@ export default {
     this.updateLpPriceData();
     this.setupTraderJoeLpTableHeaderConfig();
     this.setupLpTableHeaderConfig();
-    this.setupLevelLpTableHeaderConfig();
     this.setupGmxV2LpTableHeaderConfig();
     this.setupGmIncentivesTableHeaderConfig();
     this.setupBalancerLpTableHeaderConfig();
@@ -145,7 +128,6 @@ export default {
     this.setupWombatLpTableHeaderConfig();
     this.fetchOpenInterestData();
     this.isAvalanche = window.chain === 'avalanche';
-    this.showLevel = this.levelLpBalances;
     setTimeout(() => {
       console.log('gmxV2LpTokens', this.gmxV2LpTokens);
     }, 2000)
@@ -157,7 +139,6 @@ export default {
     ...mapState('fundsStore', [
       'concentratedLpBalances',
       'lpBalances',
-      'levelLpBalances'
     ]),
     filteredLpTokens() {
       return Object.values(this.lpTokens).filter(token =>
@@ -489,84 +470,7 @@ export default {
         ]
       };
     },
-    setupLevelLpTableHeaderConfig() {
-      this.levelLpTableHeaderConfig = {
-        gridTemplateColumns: 'repeat(6, 1fr) 120px 120px 60px 80px 22px',
-        cells: [
-          {
-            label: 'Level LLP',
-            sortable: false,
-            class: 'token',
-            id: 'TOKEN',
-            tooltip: `The LLP-asset name. These names are simplified for a smoother UI.
-                                       <a href='https://docs.deltaprime.io/integrations/tokens' target='_blank'>More information</a>.`
-          },
-          {
-            label: 'Balance',
-            sortable: false,
-            class: 'balance',
-            id: 'BALANCE',
-            tooltip: `The balance of this LLP in your Prime Account.`
-          },
-          {
-            label: 'Rewards',
-            sortable: false,
-            class: 'rewards',
-            id: 'REWARDS',
-            tooltip: `PreLVL incentives.`
-          },
-          {
-            label: 'Trend (7D)',
-            sortable: false,
-            class: 'trend-level',
-            id: 'TREND',
-            tooltip: `7D price change of this LLP token. This does not include any earned preLVL incentives.`
-          },
-          {
-            label: 'TVL',
-            sortable: false,
-            class: 'balance',
-            id: 'tvl',
-            tooltip: `The Total Value Locked (TVL) in the underlying pool.<br>
-                      <a href='https://docs.deltaprime.io/prime-brokerage-account/portfolio/pools#tvl' target='_blank'>More information</a>.`
-          },
-          {
-            label: 'Capacity',
-            sortable: false,
-            class: 'capacity',
-            id: 'capacity',
-            tooltip: `The global maximum capacity of this LLP. When the capacity is at 100%, this asset can not be created or deposited.
-            <a href='https://docs.deltaprime.io/protocol/security/token-exposure-protection' target='_blank'>More information</a>.
-            `
-          },
-          {
-            label: 'Min. APR',
-            sortable: false,
-            class: 'apr',
-            id: 'APR',
-            tooltip: `All fees, rewards and counterparty PnL collected, divided by this GM's TVL. \n\nThis does not take underlying asset price changes into account.`
-          },
-          {
-            label: 'Max. APR',
-            sortable: false,
-            class: 'apr',
-            id: 'MAX-APR',
-            tooltip: `The APR if you would borrow the lowest-interest asset from 100% to 10%, and put your total value into this pool.`
-          },
-          {
-            label: '',
-          },
-          {
-            label: 'Actions',
-            class: 'actions',
-            id: 'ACTIONS',
-            tooltip: `Click
-                      <a href='https://docs.deltaprime.io/prime-brokerage-account/portfolio/exchange#actions' target='_blank'>here</a>
-                      for more information on the different actions you can perform in your Prime Account.`
-          },
-        ]
-      };
-    },
+
     setupGmxV2LpTableHeaderConfig() {
       this.gmxV2LpTableHeaderConfig = {
         gridTemplateColumns: 'repeat(2, 1fr) 240px 130px 100px 120px 100px 60px 80px 22px',

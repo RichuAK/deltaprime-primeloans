@@ -56,7 +56,6 @@ export default {
     concentratedLpAssets: null,
     traderJoeV2LpAssets: null,
     balancerLpAssets: null,
-    levelLpAssets: null,
     gmxV2Assets: null,
     supportedAssets: null,
     provider: null,
@@ -70,7 +69,6 @@ export default {
     balancerLpBalances: null,
     lpBalances: null,
     concentratedLpBalances: null,
-    levelLpBalances: null,
     gmxV2Balances: null,
     penpieLpBalances: null,
     penpieLpAssets: null,
@@ -134,10 +132,6 @@ export default {
       state.balancerLpAssets = assets;
     },
 
-    setLevelLpAssets(state, assets) {
-      state.levelLpAssets = assets;
-    },
-
     setGmxV2Assets(state, assets) {
       state.gmxV2Assets = assets;
     },
@@ -180,10 +174,6 @@ export default {
 
     setBalancerLpBalances(state, lpBalances) {
       state.balancerLpBalances = lpBalances;
-    },
-
-    setLevelLpBalances(state, lpBalances) {
-      state.levelLpBalances = lpBalances;
     },
 
     setGmxV2Balances(state, balances) {
@@ -252,7 +242,6 @@ export default {
       await dispatch('setupTraderJoeV2LpAssets');
       await dispatch('setupWombatLpAssets');
       if (config.BALANCER_LP_ASSETS_CONFIG) await dispatch('setupBalancerLpAssets');
-      if (config.LEVEL_LP_ASSETS_CONFIG) await dispatch('setupLevelLpAssets');
       if (config.GMX_V2_ASSETS_CONFIG) await dispatch('setupGmxV2Assets');
       if (config.PENPIE_LP_ASSETS_CONFIG) await dispatch('setupPenpieLpAssets');
       // Avalanche-specific methods
@@ -317,7 +306,6 @@ export default {
         await dispatch('setupConcentratedLpAssets');
         await dispatch('setupTraderJoeV2LpAssets');
         if (config.BALANCER_LP_ASSETS_CONFIG) await dispatch('setupBalancerLpAssets');
-        if (config.LEVEL_LP_ASSETS_CONFIG) await dispatch('setupLevelLpAssets');
         if (config.GMX_V2_ASSETS_CONFIG) await dispatch('setupGmxV2Assets');
         if (config.PENPIE_LP_ASSETS_CONFIG) await dispatch('setupPenpieLpAssets');
         if (config.WOMBAT_LP_ASSETS_CONFIG) await dispatch('setupWombatLpAssets');
@@ -437,7 +425,6 @@ export default {
     async setupAssetExposures({state, rootState, commit}) {
       const tokenManager = new ethers.Contract(TOKEN_MANAGER_TUP.address, TOKEN_MANAGER.abi, provider.getSigner());
       let allAssets = state.assets;
-      let allLevelLpAssets = state.levelLpAssets;
       let allBalancerLpAssets = state.balancerLpAssets;
       let allGmxV2Assets = state.gmxV2Assets;
       let allPenpieAssets = state.penpieLpAssets;
@@ -467,11 +454,6 @@ export default {
       if (allBalancerLpAssets) {
         await setExposures(allBalancerLpAssets);
         commit('setBalancerLpAssets', allBalancerLpAssets);
-      }
-
-      if (allLevelLpAssets) {
-        await setExposures(allLevelLpAssets);
-        commit('setLevelLpAssets', allLevelLpAssets);
       }
 
       if (allGmxV2Assets) {
@@ -673,29 +655,6 @@ export default {
       // To-do: request price of TJLB token prices from Redstone
 
       commit('setTraderJoeV2LpAssets', lpTokens);
-    },
-
-    async setupLevelLpAssets({state, rootState, commit}) {
-      const lpService = rootState.serviceRegistry.lpService;
-      let lpTokens = {};
-
-      Object.values(config.LEVEL_LP_ASSETS_CONFIG).forEach(
-        asset => {
-          if (state.supportedAssets.includes(asset.symbol)) {
-            lpTokens[asset.symbol] = asset;
-          }
-        }
-      );
-
-      const redstonePriceDataRequest = await fetch(config.redstoneFeedUrl);
-      const redstonePriceData = await redstonePriceDataRequest.json();
-
-      Object.keys(lpTokens).forEach(async assetSymbol => {
-        lpTokens[assetSymbol].price = redstonePriceData[assetSymbol] ? redstonePriceData[assetSymbol][0].dataPoints[0].value : 0;
-        lpService.emitRefreshLp();
-      });
-
-      commit('setLevelLpAssets', lpTokens);
     },
 
     async setupBalancerLpAssets({state, rootState, commit}) {
@@ -966,7 +925,6 @@ export default {
       let wombatLpBalances = {};
       let wombatFarmsBalances = {};
       const balancerLpAssets = state.balancerLpAssets;
-      const levelLpBalances = {};
       const assetBalances = await state.readSmartLoanContract.getAllAssetsBalances();
       assetBalances.forEach(
         asset => {
@@ -1035,26 +993,6 @@ export default {
         rootState.serviceRegistry.deprecatedAssetsService.emitHasDeprecatedAssets();
       }
 
-      if (config.LEVEL_LP_ASSETS_CONFIG) {
-        let result = await state.multicallContract.callStatic.aggregate(
-          Object.entries(config.LEVEL_LP_ASSETS_CONFIG).map(
-            ([key, value]) => {
-              return {
-                target: state.readSmartLoanContract.address,
-                callData: state.readSmartLoanContract.interface.encodeFunctionData(value.balanceMethod)
-              }
-            })
-        );
-
-        Object.keys(config.LEVEL_LP_ASSETS_CONFIG).forEach(
-          (key, index) => {
-            levelLpBalances[key] = fromWei(result.returnData[index]);
-          }
-        )
-        console.warn('MULTICALL result');
-        console.log(result);
-      }
-
       if (config.BALANCER_LP_ASSETS_CONFIG) {
         //balances
         let result = await state.multicallContract.callStatic.aggregate(
@@ -1120,7 +1058,6 @@ export default {
       await commit('setConcentratedLpBalances', concentratedLpBalances);
       await commit('setBalancerLpBalances', balancerLpBalances);
       await commit('setBalancerLpAssets', balancerLpAssets);
-      await commit('setLevelLpBalances', levelLpBalances);
       await commit('setGmxV2Balances', gmxV2Balances);
       await commit('setPenpieLpBalances', penpieLpBalances);
       await commit('setWombatLpBalances', wombatLpBalances);
@@ -1412,21 +1349,6 @@ export default {
         commit('setBalancerLpAssets', balancerLpAssets);
       }
 
-      let levelLpAssets = state.levelLpAssets;
-
-      if (levelLpAssets) {
-        if (Object.keys(levelLpAssets).length !== 0) {
-          for (let [symbol, asset] of Object.entries(levelLpAssets)) {
-            // we don't use getApy method anymore, but fetch APYs from db
-            if (apys[symbol] && apys[symbol][symbol]) {
-              levelLpAssets[symbol].apy = apys[symbol][symbol];
-            }
-          }
-        }
-
-        commit('setLevelLpAssets', levelLpAssets);
-      }
-
       let gmxV2Assets = state.gmxV2Assets;
 
       if (gmxV2Assets) {
@@ -1585,18 +1507,6 @@ export default {
             let assetAppreciation = 0;
 
             yearlyLpInterest += parseFloat(state.balancerLpBalances[symbol]) * ((1 + apy) * (1 + assetAppreciation) - 1) * lpAsset.price;
-          }
-        }
-
-        if (state.levelLpAssets && state.levelLpBalances) {
-          for (let entry of Object.entries(state.levelLpAssets)) {
-            let symbol = entry[0];
-            let lpAsset = entry[1];
-            if (lpAsset.inactive) break;
-
-            const apy = lpAsset.apy ? lpAsset.apy / 100 : 0;
-
-            yearlyLpInterest += parseFloat(state.levelLpBalances[symbol]) * apy * lpAsset.price;
           }
         }
 
@@ -1795,9 +1705,6 @@ export default {
         case 'CONCENTRATED_LP':
           price = state.concentratedLpAssets[fundRequest.asset].price;
           break;
-        case 'LEVEL_LLP':
-          price = state.levelLpAssets[fundRequest.asset].price;
-          break;
         case 'PENPIE_LP':
           price = state.penpieLpAssets[fundRequest.asset].price;
           break;
@@ -1821,9 +1728,6 @@ export default {
           break;
         case 'CONCENTRATED_LP':
           assetBalanceBeforeDeposit = state.concentratedLpBalances[fundRequest.asset];
-          break;
-        case 'LEVEL_LLP':
-          assetBalanceBeforeDeposit = state.levelLpBalances[fundRequest.asset];
           break;
         case 'PENPIE_LP':
           assetBalanceBeforeDeposit = state.penpieLpBalances[fundRequest.asset];
@@ -1964,9 +1868,6 @@ export default {
         case 'CONCENTRATED_LP':
           price = state.concentratedLpAssets[withdrawRequest.asset].price;
           break;
-        case 'LEVEL_LLP':
-          price = state.levelLpAssets[withdrawRequest.asset].price;
-          break;
         case 'PENPIE_LP':
           price = state.penpieLpAssets[withdrawRequest.asset].price;
           break;
@@ -1986,9 +1887,6 @@ export default {
           break;
         case 'CONCENTRATED_LP':
           assetBalanceBeforeWithdraw = state.concentratedLpBalances[withdrawRequest.asset];
-          break;
-        case 'LEVEL_LLP':
-          assetBalanceBeforeWithdraw = state.levelLpBalances[withdrawRequest.asset];
           break;
         case 'PENPIE_LP':
           assetBalanceBeforeWithdraw = state.penpieLpBalances[withdrawRequest.asset].price;
@@ -2947,124 +2845,6 @@ export default {
 
       rootState.serviceRegistry.progressBarService.requestProgressBar();
       const tx = await awaitConfirmation(transaction, provider, 'claim rewards from traderjoe v2 pools');
-
-      rootState.serviceRegistry.progressBarService.emitProgressBarInProgressState();
-      rootState.serviceRegistry.modalService.closeModal();
-      setTimeout(() => {
-        rootState.serviceRegistry.progressBarService.emitProgressBarSuccessState();
-      }, SUCCESS_DELAY_AFTER_TRANSACTION);
-
-      setTimeout(async () => {
-        await dispatch('updateFunds');
-      }, config.refreshDelay);
-    },
-
-    async addLiquidityLevelFinance({state, rootState, commit, dispatch}, {addLiquidityRequest}) {
-      const provider = rootState.network.provider;
-
-      const loanAssets = mergeArrays([(
-        await state.readSmartLoanContract.getAllOwnedAssets()).map(el => fromBytes32(el)),
-        (await state.readSmartLoanContract.getStakedPositions()).map(position => fromBytes32(position.symbol)),
-        Object.keys(config.POOLS_CONFIG),
-        [addLiquidityRequest.sourceAsset, addLiquidityRequest.targetAsset]
-      ]);
-
-      const wrappedContract = await wrapContract(state.smartLoanContract, loanAssets);
-
-      let sourceDecimals = config.ASSETS_CONFIG[addLiquidityRequest.sourceAsset].decimals;
-      let sourceAmount = parseUnits(parseFloat(addLiquidityRequest.sourceAmount).toFixed(sourceDecimals), sourceDecimals);
-
-      let targetDecimals = config.LEVEL_LP_ASSETS_CONFIG[addLiquidityRequest.targetAsset].decimals;
-      let targetAmount = parseUnits(addLiquidityRequest.targetAmount.toFixed(targetDecimals), targetDecimals);
-
-      const transaction = await wrappedContract[addLiquidityRequest.method](
-        sourceAmount,
-        targetAmount,
-      );
-
-      rootState.serviceRegistry.progressBarService.requestProgressBar();
-      rootState.serviceRegistry.modalService.closeModal();
-
-      let tx = await awaitConfirmation(transaction, provider, 'create Level LLP token');
-
-      const firstAssetBalanceAfterTransaction = Number(state.assetBalances[addLiquidityRequest.sourceAsset]) - Number(addLiquidityRequest.sourceAmount);
-      const secondAssetBalanceAfterTransaction = Number(state.levelLpBalances[addLiquidityRequest.targetAsset]) + Number(addLiquidityRequest.targetAmount);
-
-      rootState.serviceRegistry.assetBalancesExternalUpdateService
-        .emitExternalAssetBalanceUpdate(addLiquidityRequest.sourceAsset, firstAssetBalanceAfterTransaction, false, false);
-      rootState.serviceRegistry.assetBalancesExternalUpdateService
-        .emitExternalAssetBalanceUpdate(addLiquidityRequest.targetAsset, secondAssetBalanceAfterTransaction, true, false);
-
-      rootState.serviceRegistry.progressBarService.emitProgressBarInProgressState();
-      setTimeout(() => {
-        rootState.serviceRegistry.progressBarService.emitProgressBarSuccessState();
-      }, SUCCESS_DELAY_AFTER_TRANSACTION);
-
-      setTimeout(async () => {
-        await dispatch('updateFunds');
-      }, config.refreshDelay);
-    },
-
-    async removeLiquidityLevelFinance({state, rootState, dispatch}, {removeLiquidityRequest}) {
-      const provider = rootState.network.provider;
-
-      const loanAssets = mergeArrays([(
-        await state.readSmartLoanContract.getAllOwnedAssets()).map(el => fromBytes32(el)),
-        (await state.readSmartLoanContract.getStakedPositions()).map(position => fromBytes32(position.symbol)),
-        Object.keys(config.POOLS_CONFIG),
-        [removeLiquidityRequest.sourceAsset, removeLiquidityRequest.targetAsset]
-      ]);
-
-      const wrappedContract = await wrapContract(state.smartLoanContract, loanAssets);
-
-      let sourceDecimals = config.LEVEL_LP_ASSETS_CONFIG[removeLiquidityRequest.sourceAsset].decimals;
-      let sourceAmount = parseUnits(parseFloat(removeLiquidityRequest.sourceAmount).toFixed(sourceDecimals), sourceDecimals);
-
-      let targetDecimals = config.ASSETS_CONFIG[removeLiquidityRequest.targetAsset].decimals;
-      let targetAmount = parseUnits(removeLiquidityRequest.targetAmount.toFixed(targetDecimals), targetDecimals);
-
-      const transaction = await wrappedContract[removeLiquidityRequest.method](
-        sourceAmount,
-        targetAmount,
-      );
-
-      rootState.serviceRegistry.progressBarService.requestProgressBar();
-      rootState.serviceRegistry.modalService.closeModal();
-
-      let tx = await awaitConfirmation(transaction, provider, 'remove liquidity from LLp');
-
-      const firstAssetBalanceAfterTransaction = Number(state.levelLpBalances[removeLiquidityRequest.sourceAsset]) - Number(removeLiquidityRequest.sourceAmount);
-      const secondAssetBalanceAfterTransaction = Number(state.assetBalances[removeLiquidityRequest.targetAsset]) + Number(removeLiquidityRequest.targetAmount);
-
-      rootState.serviceRegistry.assetBalancesExternalUpdateService
-        .emitExternalAssetBalanceUpdate(removeLiquidityRequest.sourceAsset, firstAssetBalanceAfterTransaction, true, false);
-      rootState.serviceRegistry.assetBalancesExternalUpdateService
-        .emitExternalAssetBalanceUpdate(removeLiquidityRequest.targetAsset, secondAssetBalanceAfterTransaction, false, false);
-
-      rootState.serviceRegistry.progressBarService.emitProgressBarInProgressState();
-      setTimeout(() => {
-        rootState.serviceRegistry.progressBarService.emitProgressBarSuccessState();
-      }, SUCCESS_DELAY_AFTER_TRANSACTION);
-
-      setTimeout(async () => {
-        await dispatch('updateFunds');
-      }, config.refreshDelay);
-    },
-
-    async claimLevelRewards({state, rootState, dispatch}, {claimRewardsRequest}) {
-      const provider = rootState.network.provider;
-
-      const loanAssets = mergeArrays([(
-        await state.readSmartLoanContract.getAllOwnedAssets()).map(el => fromBytes32(el)),
-        (await state.readSmartLoanContract.getStakedPositions()).map(position => fromBytes32(position.symbol)),
-        Object.keys(config.POOLS_CONFIG)
-      ]);
-
-      const transaction = await (await wrapContract(state.smartLoanContract, loanAssets)).harvestRewards(claimRewardsRequest.lpToken.pid);
-
-      rootState.serviceRegistry.progressBarService.requestProgressBar();
-
-      const tx = await awaitConfirmation(transaction, provider, 'harvestRewards');
 
       rootState.serviceRegistry.progressBarService.emitProgressBarInProgressState();
       rootState.serviceRegistry.modalService.closeModal();

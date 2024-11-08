@@ -187,8 +187,6 @@ export default {
       'concentratedLpAssets',
       'concentratedLpBalances',
       'traderJoeV2LpAssets',
-      'levelLpAssets',
-      'levelLpBalances',
       'balancerLpAssets',
       'balancerLpBalances',
       'gmxV2Assets',
@@ -389,8 +387,6 @@ export default {
       modalInstance.lpAssets = this.lpAssets;
       modalInstance.concentratedLpAssets = this.concentratedLpAssets;
       modalInstance.traderJoeV2LpAssets = this.traderJoeV2LpAssets;
-      modalInstance.levelLpAssets = this.levelLpAssets;
-      modalInstance.levelLpBalances = this.levelLpBalances;
       modalInstance.lpBalances = this.lpBalances;
       modalInstance.concentratedLpBalances = this.concentratedLpBalances;
       modalInstance.balancerLpBalances = this.balancerLpBalances;
