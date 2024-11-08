@@ -2,7 +2,7 @@
   <div id="modal" class="rtkn-pledge-modal-component modal-component">
     <Modal>
       <div class="modal__title">
-        rTKN Pledge
+        rTKN conversion
       </div>
 
       <div class="modal-top-info-bar-wrapper">
