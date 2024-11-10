@@ -4,8 +4,8 @@ const { ethers } = require('ethers');
 
 async function main() {
     // Replace 'YourContract' with the name of your contract
-    const contractSubPath = 'facets/avalanche';
-    const contractName = 'YieldYakWombatFacet';
+    const contractSubPath = 'facets';
+    const contractName = 'OwnershipFacet';
 
     // Construct the path to the contract artifact
     const artifactPath = path.join(
