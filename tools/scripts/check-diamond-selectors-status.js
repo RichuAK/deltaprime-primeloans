@@ -27,23 +27,7 @@ async function main(chain = "avalanche") {
     let allSelectorsFromRelevantFacets = new Set();
     let diamondLoupeContract = new ethers.Contract(diamondAddress[chain], DiamondLoupeAbi, provider);
     let selectorsToCheck = [
-        "0xe46bbc9e",
-        "0x040cf020",
-        "0x7c93ec30",
-        "0x00f989ad",
-        "0xd66e2979",
-        "0x9d9a355e",
-        "0x3a0551a7",
-        "0x1281f5fe",
-        "0x8913e62c",
-        "0x4636afb5",
-        "0xd0c86caf",
-        "0x9df169f7",
-        "0x7c5fc3fb",
-        "0x227c74ff",
-        "0x30f4ee27",
-        "0x6bdd9e9f",
-        "0xc37c956b",
+        "0x79ba5097"
     ]
 
     if (!selectorsAreUnique(selectorsToCheck)) {
