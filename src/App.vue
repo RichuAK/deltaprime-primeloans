@@ -77,6 +77,13 @@
     <Banner v-if="showAvalanchePrimeAccountBanner" background="green" :closable="true">
       GM+ pools are live!
     </Banner>
+    <Banner :closable="true">
+      DeltaPrime is currently paused due to an attack on the Saving pools.
+      <a class="banner-link"
+         href="https://discord.com/channels/889510301421166643/912702114252329060/1305455825023664168"
+         target="_blank"><b>Read more.</b>
+      </a>
+    </Banner>
     <div class="content">
       <div class="top-bar">
         <div class="top-bar__left-part">
@@ -215,7 +222,7 @@ export default {
 
     if (config.chainId === 42161) {
       if (window.location.href.includes('pools')) {
-        this.showArbitrumDepositorBanner = true;
+        // this.showArbitrumDepositorBanner = true;
       }
       if (window.location.href.includes('prime-account')) {
         this.remainingTime = getCountdownString(1695218400000);
@@ -225,7 +232,7 @@ export default {
 
     if (config.chainId === 43114) {
       if (window.location.href.includes('pools')) {
-        this.showAvalancheDepositorBanner = true;
+        // this.showAvalancheDepositorBanner = true;
       }
       if (window.location.href.includes('prime-account')) {
         // this.showAvalanchePrimeAccountBanner = true;
