@@ -64,6 +64,15 @@ contract Pool is PendingOwnableUpgradeable, ReentrancyGuardUpgradeable, IERC20, 
         uint256 expiresAt;
     }
 
+    struct IntentInfo {
+        uint256 amount;           // Amount requested for withdrawal
+        uint256 actionableAt;     // Timestamp when withdrawal becomes possible
+        uint256 expiresAt;        // Timestamp when intent expires
+        bool isPending;           // True if waiting period not completed
+        bool isActionable;        // True if can be withdrawn now
+        bool isExpired;          // True if expired
+    }
+
     mapping(address => WithdrawalIntent[]) public withdrawalIntents;
 
 
@@ -607,6 +616,31 @@ contract Pool is PendingOwnableUpgradeable, ReentrancyGuardUpgradeable, IERC20, 
     }
 
     /* ========= VIEW METHODS ========= */
+
+     /**
+      * @dev Returns array of all intents with their current status for a given user
+      * @param user Address of the user to check intents for
+      * @return Array of IntentInfo structs containing all intent details and status
+     **/
+    function getUserIntents(address user) external view returns (IntentInfo[] memory) {
+        WithdrawalIntent[] storage intents = withdrawalIntents[user];
+        IntentInfo[] memory intentInfos = new IntentInfo[](intents.length);
+
+        for (uint256 i = 0; i < intents.length; i++) {
+            WithdrawalIntent storage intent = intents[i];
+
+            intentInfos[i] = IntentInfo({
+                amount: intent.amount,
+                actionableAt: intent.actionableAt,
+                expiresAt: intent.expiresAt,
+                isPending: block.timestamp < intent.actionableAt,
+                isActionable: block.timestamp >= intent.actionableAt && block.timestamp <= intent.expiresAt,
+                isExpired: block.timestamp > intent.expiresAt
+            });
+        }
+
+        return intentInfos;
+    }
 
     /**
       * Returns the total amount of the withdrawal intents for the given user
