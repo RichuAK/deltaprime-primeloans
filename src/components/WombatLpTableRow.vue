@@ -155,6 +155,7 @@ import {wrapContract} from "../utils/blockchain";
 import ClaimRewardsModal from "./ClaimRewardsModal.vue";
 import BarGaugeBeta from './BarGaugeBeta.vue';
 import ABI_WOMBAT_DYNAMIC_POOL_V2 from "../abis/WombatDynamicPoolV2.json";
+import { ActionSection } from "../services/globalActionsDisableService";
 
 export default {
   name: 'WombatLpTableRow',
@@ -179,6 +180,7 @@ export default {
       contract: null,
       collectedGGP: null,
       boostApy: null,
+      isActionDisabledRecord: {},
     }
   },
   computed: {
@@ -262,7 +264,7 @@ export default {
           {
             key: 'ADD_FROM_WALLET',
             name: 'Import existing LP position',
-            disabled: this.disableAllButtons,
+            disabled: this.disableAllButtons || this.isActionDisabledRecord['ADD_FROM_WALLET'],
           },
           // {
           //   key: 'IMPORT_AND_STAKE',
@@ -272,7 +274,7 @@ export default {
           {
             key: 'CREATE_LP',
             name: 'Create LP position',
-            disabled: this.disableAllButtons,
+            disabled: this.disableAllButtons || this.isActionDisabledRecord['CREATE_LP'],
           },
         ]
       }
@@ -286,7 +288,7 @@ export default {
           {
             key: 'EXPORT_LP',
             name: 'Export LP position',
-            disabled: this.disableAllButtons,
+            disabled: this.disableAllButtons || this.isActionDisabledRecord['EXPORT_LP'],
           },
           // {
           //   key: 'UNSTAKE_AND_EXPORT',
@@ -296,7 +298,7 @@ export default {
           {
             key: 'UNWIND',
             name: 'Unwind LP position',
-            disabled: this.disableAllButtons,
+            disabled: this.disableAllButtons || this.isActionDisabledRecord['UNWIND'],
           },
         ]
       }
@@ -311,7 +313,7 @@ export default {
           {
             key: 'CLAIM_REWARDS',
             name: 'Claim rewards',
-            disabled: this.disableAllButtons || !Object.values(this.wombatLpAssets).some(lpAsset => lpAsset.rewards.length !== 0),
+            disabled: this.disableAllButtons || !Object.values(this.wombatLpAssets).some(lpAsset => lpAsset.rewards.length !== 0) || this.isActionDisabledRecord['CLAIM_REWARDS'],
             disabledInfo: 'You don\'t have any claimable rewards yet.',
           }
         ]
@@ -319,7 +321,7 @@ export default {
     },
 
     actionClick(key) {
-      if (!this.disableAllButtons || this.noSmartLoan || !this.healthLoaded) {
+      if (!this.isActionDisabledRecord[key] && (!this.disableAllButtons || this.noSmartLoan || !this.healthLoaded)) {
         switch (key) {
           case 'ADD_FROM_WALLET':
             this.openAddFromWalletModal();
@@ -652,6 +654,16 @@ export default {
     watchAssetApysRefresh() {
       this.dataRefreshEventService.observeAssetApysDataRefresh().subscribe(async () => {
         await this.setupApr();
+      })
+    },
+
+    watchActionDisabling() {
+      this.globalActionsDisableService.getSectionActions$(ActionSection.WOMBAT_LP)
+      .subscribe(isActionDisabledRecord => {
+        this.isActionDisabledRecord = isActionDisabledRecord;
+        this.setupAddActionsConfiguration();
+        this.setupRemoveActionsConfiguration();
+        this.setupMoreActionsConfiguration();
       })
     },
 

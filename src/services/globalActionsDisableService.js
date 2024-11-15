@@ -8,6 +8,7 @@ export const ActionSection = {
   'LP': 'LP',
   'GMXV2': 'GMXV2',
   'PENPIE': 'PENPIE',
+  'WOMBAT_LP': 'WOMBAT_LP',
   'TRADER_JOE_LP': 'TRADER_JOE_LP',
   'LEVEL_LP': 'LEVEL_LP',
   'BALANCER_LP': 'BALANCER_LP',
@@ -21,12 +22,12 @@ export default class GlobalActionsDisableService {
   assetsActions$ = new BehaviorSubject({
     ADD_FROM_WALLET: false,
     SWAP: false,
-    BORROW: false,
-    REPAY: false,
-    SWAP_DEBT: false,
-    WRAP: false,
-    CLAIM_GLP_REWARDS: false,
-    WITHDRAW: false,
+    BORROW: true,
+    REPAY: true,
+    SWAP_DEBT: true,
+    WRAP: true,
+    CLAIM_GLP_REWARDS: true,
+    WITHDRAW: true,
     BRIDGE_COLLATERAL: false,
   });
   poolsActions$ = new BehaviorSubject({
@@ -47,8 +48,8 @@ export default class GlobalActionsDisableService {
     DEPOSIT: false,
     DEPOSIT_AND_STAKE: false,
     MIGRATE: false,
-    WITHDRAW: false,
-    UNSTAKE_AND_WITHDRAW: false,
+    WITHDRAW: true,
+    UNSTAKE_AND_WITHDRAW: true,
   });
   lpActions$ = new BehaviorSubject({
     ADD_FROM_WALLET: false,
@@ -67,24 +68,31 @@ export default class GlobalActionsDisableService {
     ADD_FROM_WALLET: false,
     IMPORT_AND_STAKE: false,
     CREATE_LP: false,
-    EXPORT_LP: false,
-    UNSTAKE_AND_EXPORT: false,
+    EXPORT_LP: true,
+    UNSTAKE_AND_EXPORT: true,
     UNWIND: false,
-    CLAIM_REWARDS: false,
+    CLAIM_REWARDS: true,
+  });
+  wombatLpActions$ = new BehaviorSubject({
+    ADD_FROM_WALLET: false,
+    CREATE_LP: false,
+    EXPORT_LP: true,
+    UNWIND: true,
+    CLAIM_REWARDS: true,
   });
   traderJoeLpActions$ = new BehaviorSubject({
     ADD_FROM_WALLET: false,
-    WITHDRAW: false,
+    WITHDRAW: true,
     ADD_LIQUIDITY: false,
-    REMOVE_LIQUIDITY: false,
-    CLAIM_TRADERJOE_REWARDS: false,
+    REMOVE_LIQUIDITY: true,
+    CLAIM_TRADERJOE_REWARDS: true,
   });
   levelLpActions$ = new BehaviorSubject({
     ADD_FROM_WALLET: false,
     PROVIDE_LIQUIDITY: false,
     WITHDRAW: false,
     REMOVE_LIQUIDITY: false,
-    CLAIM_LEVEL_REWARDS: false,
+    CLAIM_LEVEL_REWARDS: true,
     PARTNER_PROFILE: false,
   });
   balancerLpActions$ = new BehaviorSubject({
@@ -94,7 +102,7 @@ export default class GlobalActionsDisableService {
     UNSTAKE_AND_WITHDRAW: false,
     WITHDRAW: false,
     REMOVE_LIQUIDITY: false,
-    CLAIM_REWARDS: false,
+    CLAIM_REWARDS: true,
   });
   concentratedLpActions$ = new BehaviorSubject({
     ADD_FROM_WALLET: false,
@@ -123,6 +131,7 @@ export default class GlobalActionsDisableService {
     'LP': this.lpActions$,
     'GMXV2': this.gmxV2Actions$,
     'PENPIE': this.penpieActions$,
+    'WOMBAT_LP': this.wombatLpActions$,
     'TRADER_JOE_LP': this.traderJoeLpActions$,
     'LEVEL_LP': this.levelLpActions$,
     'BALANCER_LP': this.balancerLpActions$,
@@ -139,6 +148,7 @@ export default class GlobalActionsDisableService {
     this.lpActions$,
     this.gmxV2Actions$,
     this.penpieActions$,
+    this.wombatLpActions$,
     this.traderJoeLpActions$,
     this.levelLpActions$,
     this.balancerLpActions$,
