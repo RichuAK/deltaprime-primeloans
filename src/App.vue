@@ -22,18 +22,15 @@
     <Banner v-if="showConnectBanner">
       You are not connected to Metamask. <a class="banner-link" @click="initNetwork"><b>Click here</b></a> to connect.
     </Banner>
-    <Banner v-if="showArbitrumPrimeAccountBanner">
-      Prime Accounts are paused because of the recent exploit on the Savings side. Prime Accounts are safe.
-    </Banner>
-    <Banner v-if="showArbitrumDepositorBanner" background="green-accent" :closable="true">
-      rTKN - PRIME conversion submissions close at 13th of November, 2pm CET.
-      <a class="banner-link" href="https://discord.com/channels/889510301421166643/912702114252329060/1303715753735753780"
-         target="_blank">
-        <b>
-          Read more.
-        </b>
-      </a>
-    </Banner>
+<!--    <Banner v-if="showArbitrumDepositorBanner" background="green-accent" :closable="true">-->
+<!--      rTKN - PRIME conversion submissions close at 13th of November, 2pm CET.-->
+<!--      <a class="banner-link" href="https://discord.com/channels/889510301421166643/912702114252329060/1303715753735753780"-->
+<!--         target="_blank">-->
+<!--        <b>-->
+<!--          Read more.-->
+<!--        </b>-->
+<!--      </a>-->
+<!--    </Banner>-->
     <Banner v-if="showInterestRateBanner" background="green-accent" :closable="true">
       Interest rate model will be updated at 12:00 CET. <a class="banner-link"
                                                            href="https://discord.com/channels/889510301421166643/912702114252329060/1180080211254050897"><b>Read
@@ -71,16 +68,17 @@
     <Banner v-if="showDeprecatedAssetsBanner">
       We are dropping support to some tokens of your Prime Account. Please review your portfolio
     </Banner>
-    <Banner v-if="showAvalancheDepositorBanner" background="green" :closable="true">
-      Boost is all filled up again. Happy Boosting!
-    </Banner>
-    <Banner v-if="showAvalanchePrimeAccountBanner" background="green" :closable="true">
-      GM+ pools are live!
-    </Banner>
-    <Banner :closable="true">
+    <Banner v-if="showAvalancheDepositorBanner || showArbitrumDepositorBanner" :closable="true">
       DeltaPrime is currently paused due to an attack on the Saving pools.
       <a class="banner-link"
          href="https://discord.com/channels/889510301421166643/912702114252329060/1305455825023664168"
+         target="_blank"><b>Read more.</b>
+      </a>
+    </Banner>
+    <Banner v-if="showAvalanchePrimeAccountBanner || showArbitrumPrimeAccountBanner" background="green" :closable="true">
+      Prime Accounts are partially unpaused.
+      <a class="banner-link"
+         href="https://discord.com/channels/889510301421166643/912702114252329060/1308755446991032320"
          target="_blank"><b>Read more.</b>
       </a>
     </Banner>
@@ -222,20 +220,20 @@ export default {
 
     if (config.chainId === 42161) {
       if (window.location.href.includes('pools')) {
-        // this.showArbitrumDepositorBanner = true;
+        this.showArbitrumDepositorBanner = true;
       }
       if (window.location.href.includes('prime-account')) {
         this.remainingTime = getCountdownString(1695218400000);
-        // this.showArbitrumPrimeAccountBanner = true;
+        this.showArbitrumPrimeAccountBanner = true;
       }
     }
 
     if (config.chainId === 43114) {
       if (window.location.href.includes('pools')) {
-        // this.showAvalancheDepositorBanner = true;
+        this.showAvalancheDepositorBanner = true;
       }
       if (window.location.href.includes('prime-account')) {
-        // this.showAvalanchePrimeAccountBanner = true;
+        this.showAvalanchePrimeAccountBanner = true;
       }
     }
   },
