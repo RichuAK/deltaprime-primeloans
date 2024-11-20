@@ -646,8 +646,8 @@ export default {
     openSwapModal() {
       let swapDexSwapMethodMap = {};
 
-      if (config.SWAP_DEXS_CONFIG.YakSwap.availableAssets && config.SWAP_DEXS_CONFIG.YakSwap.availableAssets.includes(this.asset.symbol)) swapDexSwapMethodMap.YakSwap = this.swap;
-      if (config.SWAP_DEXS_CONFIG.YakSwap.availableAssets && config.SWAP_DEXS_CONFIG.ParaSwapV2.availableAssets.includes(this.asset.symbol)) swapDexSwapMethodMap.ParaSwapV2 = this.paraSwapV2;
+      if (config.SWAP_DEXS_CONFIG.YakSwap && config.SWAP_DEXS_CONFIG.YakSwap.availableAssets && config.SWAP_DEXS_CONFIG.YakSwap.availableAssets.includes(this.asset.symbol)) swapDexSwapMethodMap.YakSwap = this.swap;
+      if (config.SWAP_DEXS_CONFIG.ParaSwapV2 && config.SWAP_DEXS_CONFIG.ParaSwapV2.availableAssets && config.SWAP_DEXS_CONFIG.ParaSwapV2.availableAssets.includes(this.asset.symbol)) swapDexSwapMethodMap.ParaSwapV2 = this.paraSwapV2;
 
       const modalInstance = this.openModal(SwapModal);
       this.currentlyOpenModalInstance = modalInstance;
