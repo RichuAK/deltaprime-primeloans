@@ -98,30 +98,30 @@ export default {
     },
 
     SWAP_DEXS_CONFIG: {
-        ParaSwapV2: {
-            displayName: 'ParaSwap',
-            availableAssets: ['AVAX', 'USDC', 'BTC', 'ETH', 'USDT', 'sAVAX', 'QI', 'PNG', 'yyAVAX', 'ggAVAX'],
-            slippageMargin: 0.05
-        },
+        // ParaSwapV2: {
+        //     displayName: 'ParaSwap',
+        //     availableAssets: ['AVAX', 'USDC', 'BTC', 'ETH', 'USDT', 'sAVAX', 'QI', 'PNG', 'yyAVAX', 'ggAVAX'],
+        //     slippageMargin: 0.05
+        // },
         YakSwap: {
             displayName: 'YakSwap',
             availableAssets: ['AVAX', 'USDC', 'BTC', 'ETH', 'USDT', 'EUROC', 'GLP', 'sAVAX', 'GMX', 'JOE', 'QI', 'PNG', 'yyAVAX', 'ggAVAX'],
             slippageMargin: 0.02
         },
-        GLP_DIRECT: {
-            displayName: 'Direct',
-            availableAssets: ['GLP', 'ETH', 'AVAX', 'USDC', 'BTC'],
-            coreAsset: 'GLP',
-            slippageMargin: 0.02
-        },
-        GmxV2: {
-            availableAssets: [],
-            slippageMargin: 0.5
-        },
-        Wombat: {
-            availableAssets: [],
-            slippageMargin: 0.02
-        }
+        // GLP_DIRECT: {
+        //     displayName: 'Direct',
+        //     availableAssets: ['GLP', 'ETH', 'AVAX', 'USDC', 'BTC'],
+        //     coreAsset: 'GLP',
+        //     slippageMargin: 0.02
+        // },
+        // GmxV2: {
+        //     availableAssets: [],
+        //     slippageMargin: 0.5
+        // },
+        // Wombat: {
+        //     availableAssets: [],
+        //     slippageMargin: 0.02
+        // }
     },
 
     SWAP_MODAL_SLIPPAGE_OPTIONS: {

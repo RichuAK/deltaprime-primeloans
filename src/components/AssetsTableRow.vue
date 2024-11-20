@@ -18,7 +18,11 @@
             Borrow&nbsp;APY:&nbsp;{{ borrowApyPerPool[asset.symbol] | percent }}
           </div>
           <div class="asset__loan" v-if="asset.apy">
-            APY:&nbsp;{{ asset.apy / 100 | percent }}<span v-if="asset.hasIncentives + boostApy"><br>up to {{4.5 * asset.apy / 100 + boostApy | percent}}<img v-if="boostApy" v-tooltip="{content: `This pool is incentivized!<br>⁃ up to ${asset.apy ? (4.5 * asset.apy).toFixed(2) : 0}% Pool APR<br>⁃ up to ${boostApy ? (boostApy * 100).toFixed(2) : 0}% ${chain === 'arbitrum' ? 'ARB' : 'AVAX'} incentives`, classes: 'info-tooltip'}" src="src/assets/icons/stars.png" class="stars-icon"></span>
+            APY:&nbsp;{{ asset.apy / 100 | percent }}<span
+            v-if="asset.hasIncentives + boostApy"><br>up to {{ 4.5 * asset.apy / 100 + boostApy | percent }}<img
+            v-if="boostApy"
+            v-tooltip="{content: `This pool is incentivized!<br>⁃ up to ${asset.apy ? (4.5 * asset.apy).toFixed(2) : 0}% Pool APR<br>⁃ up to ${boostApy ? (boostApy * 100).toFixed(2) : 0}% ${chain === 'arbitrum' ? 'ARB' : 'AVAX'} incentives`, classes: 'info-tooltip'}"
+            src="src/assets/icons/stars.png" class="stars-icon"></span>
           </div>
         </div>
       </div>
@@ -95,7 +99,9 @@
                     :icon-src="'src/assets/icons/plus.svg'" :size="26"
                     v-tooltip="{content: 'Deposit collateral', classes: 'button-tooltip'}"
                     v-on:click="actionClick('ADD_FROM_WALLET')">
-          <template v-if="(asset.symbol === nativeAssetOptions[0] && noSmartLoan && !isActionDisabledRecord['ADD_FROM_WALLET'])" v-slot:bubble>
+          <template
+            v-if="(asset.symbol === nativeAssetOptions[0] && noSmartLoan && !isActionDisabledRecord['ADD_FROM_WALLET'])"
+            v-slot:bubble>
             To create your Prime Account, click one of the
             <DeltaIcon class="icon-button__icon" :icon-src="'src/assets/icons/plus-white.svg'"
                        :size="26"
@@ -103,11 +109,12 @@
             buttons and deposit collateral.
           </template>
         </IconButton>
-        <IconButton :disabled="isActionDisabledRecord['SWAP'] || disableAllButtons || asset.inactive || asset.unsupported || noSmartLoan"
-                    class="action-button"
-                    :icon-src="'src/assets/icons/swap.svg'" :size="26"
-                    v-tooltip="{content: 'Swap', classes: 'button-tooltip'}"
-                    v-on:click="actionClick('SWAP')">
+        <IconButton
+          :disabled="isActionDisabledRecord['SWAP'] || disableAllButtons || asset.inactive || asset.unsupported || noSmartLoan"
+          class="action-button"
+          :icon-src="'src/assets/icons/swap.svg'" :size="26"
+          v-tooltip="{content: 'Swap', classes: 'button-tooltip'}"
+          v-on:click="actionClick('SWAP')">
         </IconButton>
         <IconButtonMenuBeta
           class="actions__icon-button"
@@ -176,7 +183,7 @@ import Toggle from './Toggle.vue';
 import {BigNumber} from 'ethers';
 import SwapDebtModal from './SwapDebtModal.vue';
 import MintCAIModal from './MintCAIModal.vue';
-import {ActionSection} from "../services/globalActionsDisableService";
+import {ActionSection} from '../services/globalActionsDisableService';
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -682,7 +689,8 @@ export default {
       };
 
       modalInstance.$on('SWAP', swapEvent => {
-        let swapMethod = () => {}
+        let swapMethod = () => {
+        }
         let swapRequest = {}
         if (swapEvent.swapDex === 'GLP_DIRECT') {
           if (swapEvent.sourceAsset === 'GLP') {
@@ -710,12 +718,12 @@ export default {
           swapMethod = swapDexSwapMethodMap[swapRequest.swapDex]
         }
 
-          this.handleTransaction(swapMethod, {swapRequest: swapRequest}, () => {
-            this.$forceUpdate();
-          }, (error) => {
-            this.handleTransactionError(error);
-          }).then(() => {
-          });
+        this.handleTransaction(swapMethod, {swapRequest: swapRequest}, () => {
+          this.$forceUpdate();
+        }, (error) => {
+          this.handleTransactionError(error);
+        }).then(() => {
+        });
       });
 
       modalInstance.initiate();
@@ -1132,7 +1140,8 @@ export default {
       return walletTokenBalance;
     },
 
-    async getSmartLoanContractNativeTokenBalance() {s
+    async getSmartLoanContractNativeTokenBalance() {
+      s
       const balance = parseFloat(ethers.utils.formatEther(await this.provider.getBalance(this.smartLoanContract.address)));
       return balance;
     },
@@ -1223,10 +1232,10 @@ export default {
 
     watchActionDisabling() {
       this.globalActionsDisableService.getSectionActions$(ActionSection.ASSETS)
-          .subscribe(isActionDisabledRecord => {
-            this.isActionDisabledRecord = isActionDisabledRecord;
-            this.setupActionsConfiguration();
-          })
+        .subscribe(isActionDisabledRecord => {
+          this.isActionDisabledRecord = isActionDisabledRecord;
+          this.setupActionsConfiguration();
+        })
     },
 
     setupAvailableFarms() {
@@ -1318,6 +1327,10 @@ export default {
               caiMintOrBurnSlippageError = true;
               this.progressBarService.emitProgressBarErrorState('due to MetaMask error. Please try adjusting gas limit or use swap instead.')
             }
+            break;
+          case 404:
+            this.progressBarService.emitProgressBarErrorState('Action is currently disabled')
+            break;
         }
       } else {
         const parsedError = String(error);

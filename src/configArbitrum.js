@@ -78,28 +78,28 @@ export default {
     },
 
     SWAP_DEXS_CONFIG: {
-        ParaSwapV2: {
-            displayName: 'ParaSwap',
-            availableAssets: ['ETH', 'USDC', 'USDT', 'USDC.e', 'ARB', 'BTC', 'GMX', 'DAI', 'FRAX', 'LINK', 'UNI', 'wstETH', 'GRAIL', 'WOO', 'MAGIC', 'JOE', 'ezETH', 'weETH', 'rsETH'],
-            slippageMargin: 0.05
-        },
+        // ParaSwapV2: {
+        //     displayName: 'ParaSwap',
+        //         availableAssets: ['ETH', 'USDC', 'USDT', 'USDC.e', 'ARB', 'BTC', 'GMX', 'DAI', 'FRAX', 'LINK', 'UNI', 'wstETH', 'GRAIL', 'WOO', 'MAGIC', 'JOE', 'ezETH', 'weETH', 'rsETH'],
+        //     slippageMargin: 0.05
+        // },
         YakSwap: {
             displayName: 'YakSwap',
-            availableAssets: ['ETH', 'USDC', 'USDT', 'USDC.e', 'ARB', 'BTC', 'GMX', 'GLP', 'DAI', 'FRAX', 'LINK', 'UNI', 'wstETH', 'GRAIL', 'WOO', 'MAGIC', 'JOE', 'rsETH'],
+            availableAssets: ['ETH', 'USDC', 'USDT', 'USDC.e', 'ARB', 'BTC', 'GMX', 'GLP', 'DAI', 'FRAX', 'LINK', 'UNI', 'wstETH', 'GRAIL', 'WOO', 'MAGIC', 'JOE', 'ezETH', 'weETH', 'rsETH'],
             slippageMargin: 0.02
         },
-        Level: {
-            availableAssets: [],
-            slippageMargin: 0.1
-        },
-        GmxV2: {
-            availableAssets: [],
-            slippageMargin: 0.1
-        },
-        Penpie: {
-            availableAssets: [],
-            slippageMargin: 0.02
-        }
+        // Level: {
+        //     availableAssets: [],
+        //     slippageMargin: 0.1
+        // },
+        // GmxV2: {
+        //     availableAssets: [],
+        //     slippageMargin: 0.1
+        // },
+        // Penpie: {
+        //     availableAssets: [],
+        //     slippageMargin: 0.02
+        // }
     },
     SWAP_MODAL_SLIPPAGE_OPTIONS: {
         low: {value: 0.5, name: 'Low', imgSrc: 'src/assets/icons/check.png', tooltip: 'Ideal for stable market conditions and highly liquid tokens. High chance of transaction failing.'},

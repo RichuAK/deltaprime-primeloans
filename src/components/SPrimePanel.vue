@@ -546,6 +546,9 @@ export default {
             this.progressBarService.emitProgressBarCancelledState()
             this.closeModal();
             break;
+          case 404:
+            this.progressBarService.emitProgressBarErrorState('Action is currently disabled')
+            break;
         }
       }
     },

@@ -20,7 +20,7 @@ export const ActionSection = {
 export default class GlobalActionsDisableService {
   appInReadonlyMode$ = new BehaviorSubject(false)
   assetsActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
+    ADD_FROM_WALLET: true,
     SWAP: false,
     BORROW: true,
     REPAY: true,
@@ -28,99 +28,99 @@ export default class GlobalActionsDisableService {
     WRAP: true,
     CLAIM_GLP_REWARDS: true,
     WITHDRAW: true,
-    BRIDGE_COLLATERAL: false,
+    BRIDGE_COLLATERAL: true,
   });
   poolsActions$ = new BehaviorSubject({
-    DEPOSIT: false,
-    BRIDGE: false,
-    BRIDGE_DEPOSIT: false,
-    WITHDRAW: false,
-    SWAP_DEPOSIT: false,
-    CLAIM_AVALANCHE_BOOST: false,
+    DEPOSIT: true,
+    BRIDGE: true,
+    BRIDGE_DEPOSIT: true,
+    WITHDRAW: true,
+    SWAP_DEPOSIT: true,
+    CLAIM_AVALANCHE_BOOST: true,
   });
   stakingProtocolActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    STAKE: false,
-    WITHDRAW: false,
-    UNSTAKE: false,
+    ADD_FROM_WALLET: true,
+    STAKE: true,
+    WITHDRAW: true,
+    UNSTAKE: true,
   });
   stakingProtocolWombatActions$ = new BehaviorSubject({
-    DEPOSIT: false,
-    DEPOSIT_AND_STAKE: false,
-    MIGRATE: false,
+    DEPOSIT: true,
+    DEPOSIT_AND_STAKE: true,
+    MIGRATE: true,
     WITHDRAW: true,
     UNSTAKE_AND_WITHDRAW: true,
   });
   lpActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    PROVIDE_LIQUIDITY: false,
-    WITHDRAW: false,
-    REMOVE_LIQUIDITY: false,
+    ADD_FROM_WALLET: true,
+    PROVIDE_LIQUIDITY: true,
+    WITHDRAW: true,
+    REMOVE_LIQUIDITY: true,
   });
   gmxV2Actions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    PROVIDE_LIQUIDITY: false,
-    WITHDRAW: false,
-    REMOVE_LIQUIDITY: false,
-    PARTNER_PROFILE: false,
+    ADD_FROM_WALLET: true,
+    PROVIDE_LIQUIDITY: true,
+    WITHDRAW: true,
+    REMOVE_LIQUIDITY: true,
+    PARTNER_PROFILE: true,
   });
   penpieActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    IMPORT_AND_STAKE: false,
-    CREATE_LP: false,
+    ADD_FROM_WALLET: true,
+    IMPORT_AND_STAKE: true,
+    CREATE_LP: true,
     EXPORT_LP: true,
     UNSTAKE_AND_EXPORT: true,
-    UNWIND: false,
+    UNWIND: true,
     CLAIM_REWARDS: true,
   });
   wombatLpActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    CREATE_LP: false,
+    ADD_FROM_WALLET: true,
+    CREATE_LP: true,
     EXPORT_LP: true,
     UNWIND: true,
     CLAIM_REWARDS: true,
   });
   traderJoeLpActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
+    ADD_FROM_WALLET: true,
     WITHDRAW: true,
-    ADD_LIQUIDITY: false,
-    REMOVE_LIQUIDITY: true,
+    ADD_LIQUIDITY: true,
+    REMOVE_LIQUIDITY: false,
     CLAIM_TRADERJOE_REWARDS: true,
   });
   levelLpActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    PROVIDE_LIQUIDITY: false,
-    WITHDRAW: false,
-    REMOVE_LIQUIDITY: false,
+    ADD_FROM_WALLET: true,
+    PROVIDE_LIQUIDITY: true,
+    WITHDRAW: true,
+    REMOVE_LIQUIDITY: true,
     CLAIM_LEVEL_REWARDS: true,
-    PARTNER_PROFILE: false,
+    PARTNER_PROFILE: true,
   });
   balancerLpActions$ = new BehaviorSubject({
-    FUND_AND_STAKE: false,
-    STAKE: false,
-    PROVIDE_LIQUIDITY: false,
-    UNSTAKE_AND_WITHDRAW: false,
-    WITHDRAW: false,
-    REMOVE_LIQUIDITY: false,
+    FUND_AND_STAKE: true,
+    STAKE: true,
+    PROVIDE_LIQUIDITY: true,
+    UNSTAKE_AND_WITHDRAW: true,
+    WITHDRAW: true,
+    REMOVE_LIQUIDITY: true,
     CLAIM_REWARDS: true,
   });
   concentratedLpActions$ = new BehaviorSubject({
-    ADD_FROM_WALLET: false,
-    PROVIDE_LIQUIDITY: false,
-    WITHDRAW: false,
-    REMOVE_LIQUIDITY: false,
+    ADD_FROM_WALLET: true,
+    PROVIDE_LIQUIDITY: true,
+    WITHDRAW: true,
+    REMOVE_LIQUIDITY: true,
   });
   zapsActions$ = new BehaviorSubject({
-    LONG: false,
-    SHORT: false,
-    CONVERT_GLP_TO_GM: false,
-    CREATE_ACCOUNT: false,
+    LONG: true,
+    SHORT: true,
+    CONVERT_GLP_TO_GM: true,
+    CREATE_ACCOUNT: true,
   });
   sprimeActions$ = new BehaviorSubject({
-    MINT: false,
-    REBALANCE: false,
-    REDEEM: false,
-    BUY: false,
+    MINT: true,
+    REBALANCE: true,
+    REDEEM: true,
+    BUY: true,
   });
 
   actionsSectionsRecord = {
