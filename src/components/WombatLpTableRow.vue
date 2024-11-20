@@ -264,7 +264,7 @@ export default {
           {
             key: 'ADD_FROM_WALLET',
             name: 'Import existing LP position',
-            disabled: this.disableAllButtons || this.isActionDisabledRecord['ADD_FROM_WALLET'],
+            disabled: true,
           },
           // {
           //   key: 'IMPORT_AND_STAKE',
@@ -274,7 +274,7 @@ export default {
           {
             key: 'CREATE_LP',
             name: 'Create LP position',
-            disabled: this.disableAllButtons || this.isActionDisabledRecord['CREATE_LP'],
+            disabled: true,
           },
         ]
       }
@@ -288,7 +288,7 @@ export default {
           {
             key: 'EXPORT_LP',
             name: 'Export LP position',
-            disabled: this.disableAllButtons || this.isActionDisabledRecord['EXPORT_LP'],
+            disabled: true,
           },
           // {
           //   key: 'UNSTAKE_AND_EXPORT',
@@ -298,7 +298,7 @@ export default {
           {
             key: 'UNWIND',
             name: 'Unwind LP position',
-            disabled: this.disableAllButtons || this.isActionDisabledRecord['UNWIND'],
+            disabled: true,
           },
         ]
       }
@@ -313,7 +313,7 @@ export default {
           {
             key: 'CLAIM_REWARDS',
             name: 'Claim rewards',
-            disabled: this.disableAllButtons || !Object.values(this.wombatLpAssets).some(lpAsset => lpAsset.rewards.length !== 0) || this.isActionDisabledRecord['CLAIM_REWARDS'],
+            disabled: true,
             disabledInfo: 'You don\'t have any claimable rewards yet.',
           }
         ]
