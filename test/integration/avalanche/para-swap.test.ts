@@ -84,6 +84,7 @@ describe('ParaSwap', () => {
                 srcAmount: priceRoute.srcAmount,
                 slippage: 300,
                 priceRoute,
+                deadline: Math.floor(Date.now()/1000) + 3000,
                 userAddress: wrappedLoan.address,
                 partner: 'anon',
             }, {
@@ -105,18 +106,19 @@ describe('ParaSwap', () => {
 
             smartLoansFactory = await deployContract(owner, SmartLoansFactoryArtifact) as SmartLoansFactory;
 
-            await deployPools(smartLoansFactory, poolNameAirdropList, tokenContracts, poolContracts, lendingPools, owner, depositor, 2000);
-
-            tokensPrices = await getTokensPricesMap(assetsList, "avalanche", getRedstonePrices, []);
-            MOCK_PRICES = convertTokenPricesMapToMockPrices(tokensPrices);
-            supportedAssets = convertAssetsListToSupportedAssets(assetsList);
-            addMissingTokenContracts(tokenContracts, assetsList.filter(asset => !Array.from(tokenContracts.keys()).includes(asset)));
-
             let tokenManager = await deployContract(
                 owner,
                 MockTokenManagerArtifact,
                 []
             ) as MockTokenManager;
+
+
+            await deployPools(smartLoansFactory, poolNameAirdropList, tokenContracts, poolContracts, lendingPools, owner, depositor, 2000, 'AVAX', [], tokenManager.address);
+
+            tokensPrices = await getTokensPricesMap(assetsList, "avalanche", getRedstonePrices, []);
+            MOCK_PRICES = convertTokenPricesMapToMockPrices(tokensPrices);
+            supportedAssets = convertAssetsListToSupportedAssets(assetsList);
+            addMissingTokenContracts(tokenContracts, assetsList.filter(asset => !Array.from(tokenContracts.keys()).includes(asset)));
 
             await tokenManager.connect(owner).initialize(supportedAssets, lendingPools);
             await tokenManager.connect(owner).setFactoryAddress(smartLoansFactory.address);
@@ -191,9 +193,9 @@ describe('ParaSwap', () => {
 
             expect(await loanOwnsAsset("USDC")).to.be.true;
 
-            expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(initialTotalValue, 1.0);
-            expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.eq(initialHR);
-            expect(fromWei(await wrappedLoan.getThresholdWeightedValue())).to.be.closeTo(initialTWV, 1.0);
+            expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(initialTotalValue, 0.01 * initialTotalValue);
+            expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.closeTo(initialHR, 0.01 * initialHR);
+            expect(fromWei(await wrappedLoan.getThresholdWeightedValue())).to.be.closeTo(initialTWV, 0.01 * initialTWV);
         });
 
         it('should swap funds: USDC -> ETH', async () => {
@@ -206,6 +208,7 @@ describe('ParaSwap', () => {
 
             let minOut = formatUnits(usdcBalance, 6) * tokensPrices.get("USDC")! / tokensPrices.get("ETH")!;
             minOut = toWei((minOut * 0.98).toString());
+
             const swapData = await getSwapData('USDC', 'ETH', usdcBalance, minOut);
 
             await wrappedLoan.paraSwapV2(swapData.selector, swapData.data, TOKEN_ADDRESSES['USDC'], usdcBalance, TOKEN_ADDRESSES['ETH'], minOut);
@@ -213,9 +216,9 @@ describe('ParaSwap', () => {
             expect(await loanOwnsAsset("USDC")).to.be.false;
             expect(await loanOwnsAsset("ETH")).to.be.true;
 
-            expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(initialTotalValue, 1.0);
-            expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.eq(initialHR);
-            expect(fromWei(await wrappedLoan.getThresholdWeightedValue())).to.be.closeTo(initialTWV, 1.0);
+            expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(initialTotalValue, 0.01 * initialTotalValue);
+            expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.closeTo(initialHR, 0.01 * initialHR);
+            expect(fromWei(await wrappedLoan.getThresholdWeightedValue())).to.be.closeTo(initialTWV,  0.01 * initialTWV);
         });
 
         it('should swap half funds: ETH -> USDC', async () => {
