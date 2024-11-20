@@ -60,7 +60,9 @@
       <div class="table__cell table__cell--double-value loan">
         <template v-if="debtsPerAsset && debtsPerAsset[asset.symbol] && parseFloat(debtsPerAsset[asset.symbol].debt)">
           <div class="double-value__pieces">
-            <span v-if="isDebtEstimated">~</span>{{ debtsPerAsset[asset.symbol].debt | smartRound(8, true) }}
+            ~{{ debtsPerAsset[asset.symbol].debt | smartRound(8, true) }}
+            <img src="src/assets/icons/warning.svg"
+                 v-tooltip="{content: 'The debts are currently being recalculated to the state before the pause. The final value might differ.', classes: 'info-tooltip long'}">
           </div>
           <div class="double-value__usd">{{ debtsPerAsset[asset.symbol].debt * asset.price | usd }}</div>
         </template>
