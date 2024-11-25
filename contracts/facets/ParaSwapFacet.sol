@@ -14,6 +14,8 @@ import "../interfaces/ITokenManager.sol";
 //This path is updated during deployment
 import "../lib/local/DeploymentConstants.sol";
 
+import "hardhat/console.sol";
+
 contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     using TransferHelper for address;
 
@@ -30,6 +32,27 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 initialSoldTokenBalance;
         uint256 initialBoughtTokenBalance;
     }
+
+    struct DecodedData {
+        address fromTokenData;
+        address toTokenData;
+        address exchangeData;
+        uint256 fromAmountData;
+        uint256 toAmountData;
+        uint256 expectedAmountData;
+        uint256 feePercentData;
+        uint256 deadlineData;
+        address partnerData;
+        bool isApprovedData;
+        address beneficiaryData;
+        bytes pathData;
+        bytes permitData;
+        bytes16 uuidData;
+    }
+
+    // (address fromToken, address toToken, address exchange, uint256 fromAmount, uint256 toAmount, 
+    // uint256 expectedAmount, uint256 feePercent, uint256 deadline, 
+    // address partner, bool isApproved, address beneficiary, bytes path, bytes permit, bytes16 uuid)
 
     function getInitialTokensDetails(
         address _soldTokenAddress,
@@ -135,7 +158,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
 
     function paraSwapV2(
         bytes4 selector,
-        bytes memory data,
+        bytes memory data,  ///@dev changing data from memory to calldata for slicing
         address fromToken,
         uint256 fromAmount,
         address toToken,
@@ -156,14 +179,90 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         require(minOut > 0, "minOut needs to be > 0");
         require(fromAmount > 0, "Amount of tokens to sell has to be greater than 0");
 
+        /// @dev would need to slice the data before decoding, I think
+        // {
+        //     console.log("Inside ParaSwap v2");
+        //     bytes memory selectorBytes = abi.encodePacked(selector);
+        //     console.log("Selector: ");
+        //     console.logBytes(selectorBytes);
+
+        //     bytes memory firstThreeAddresses = data[:96];
+        //     address fromTokenFromData;
+        //     address toTokenFromData;
+        //     address exchangeFromData;
+        //     (fromTokenFromData, toTokenFromData, exchangeFromData) = abi.decode(
+        //         firstThreeAddresses,
+        //         (address, address, address)
+        //     );
+        //     console.log("FromToken: ");
+        //     console.log(fromTokenFromData);
+        //     console.log("ToToken: ");
+        //     console.log(toTokenFromData);
+        //     console.log("Exchange: ");
+        //     console.log(exchangeFromData);
+        // }
+
+        ///@dev special scoping here to avoid stack too deep error
+        /// https://stackoverflow.com/questions/74578910/how-to-fix-compilererror-stack-too-deep-try-compiling-with-via-ir-cli
+        /// UniSwap does the same apparently: https://ethereum.stackexchange.com/questions/6061/error-while-compiling-stack-too-deep
+        {
+            DecodedData memory decodedData = abi.decode(data, (DecodedData));
+            console.log("From Token:");
+            console.log(decodedData.fromTokenData);
+            console.log("To Token:");
+            console.log(decodedData.toTokenData);
+            console.log("Exchange:");
+            console.log(decodedData.exchangeData);
+            console.log("From Amount:");
+            console.log(decodedData.fromAmountData);
+            console.log("To Amount:");
+            console.log(decodedData.toAmountData);
+            console.log("Expected Amount:");
+            console.log(decodedData.expectedAmountData);
+            console.log("Fee Percent:");
+            console.log(decodedData.feePercentData);
+            console.log("Deadline:");
+            console.log(decodedData.deadlineData);
+            console.log("Partner:");
+            console.log(decodedData.partnerData);
+            console.log("Is Approved:");
+            console.log(decodedData.isApprovedData);
+            // console.log("Beneficiary:");
+            // console.log(decodedData.beneficiaryData);
+            // console.log("Path:");
+            // console.logBytes(decodedData.pathData);
+            // console.log("Permit:");
+            // console.logBytes(decodedData.permitData);
+            // bytes memory uuidBytes = abi.encodePacked(decodedData.uuidData);
+            // console.log("UUID:");
+            // console.logBytes(uuidBytes);
+
+        }
+
+        {
+            DecodedData memory decodedData = abi.decode(data, (DecodedData));
+            console.log("Beneficiary:");
+            console.log(decodedData.beneficiaryData);
+            console.log("Path:");
+            console.logBytes(decodedData.pathData);
+            console.log("Permit:");
+            console.logBytes(decodedData.permitData);
+            bytes memory uuidBytes = abi.encodePacked(decodedData.uuidData);
+            console.log("UUID:");
+            console.logBytes(uuidBytes);
+        }
         address(swapTokensDetails.soldToken).safeApprove(PARA_TRANSFER_PROXY, 0);
         address(swapTokensDetails.soldToken).safeApprove(
             PARA_TRANSFER_PROXY,
             fromAmount
         );
 
+        
+        
         (bool success, ) = PARA_ROUTER.call((abi.encodePacked(selector, data)));
         require(success, "Swap failed");
+        
+        
 
         uint256 boughtTokenFinalAmount = swapTokensDetails.boughtToken.balanceOf(
             address(this)
