@@ -1,17 +1,19 @@
-import '@typechain/hardhat'
-import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-waffle'
+import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
 import "hardhat-watcher";
 import "@nomiclabs/hardhat-etherscan";
 import "hardhat-contract-sizer";
 import "hardhat-interface-generator";
 // import * as tdly from "@tenderly/hardhat-tenderly";
 // tdly.setup({ automaticVerifications: false });
-require('hardhat-deploy');
+require("hardhat-deploy");
 
-const fs = require('fs');
-function getKey(network: string, filename: string) { return fs.readFileSync(`.secrets/${network}/${filename}`).toString().trim() }
-
+const fs = require("fs");
+// function getKey(network: string, filename: string) { return fs.readFileSync(`.secrets/${network}/${filename}`).toString().trim() }
+function getKey(network: string, filename: string) {
+  return "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+}
 export default {
   solidity: {
     compilers: [
@@ -26,11 +28,12 @@ export default {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 10
-          }
-        }
+            runs: 200,
+          },
+          viaIR: false,
+        },
       },
-    ]
+    ],
   },
   defaultNetwork: "hardhat",
   networks: {
@@ -44,48 +47,62 @@ export default {
     },
     localhost: {
       timeout: 1800000,
-      url: 'http://127.0.0.1:8545/',
+      url: "http://127.0.0.1:8545/",
       chainId: 31337,
       gas: 12000000,
       blockGasLimit: 0x1fffffffffffff,
       allowUnlimitedContractSize: true,
       // accounts: [getKey('avalanche', 'deployer'), getKey('avalanche', 'admin')]
     },
+    // @richu
+    localAvalanche: {
+      timeout: 1800000,
+      url: "http://127.0.0.1:8545/",
+      chainId: 43114,
+      gas: 20000000,
+      blockGasLimit: 30000000,
+      allowUnlimitedContractSize: true,
+    },
+
     arbitrum_devnet: {
       timeout: 1800000,
-      url: 'https://rpc.vnet.tenderly.co/devnet/arbi-0-gas/f5ecbccf-4ea7-4e7f-9faf-34c49ccc1121',
+      url: "https://rpc.vnet.tenderly.co/devnet/arbi-0-gas/f5ecbccf-4ea7-4e7f-9faf-34c49ccc1121",
       chainId: 42161,
       // accounts: [getKey('arbitrum', 'deployer'), getKey('arbitrum', 'admin')]
     },
     arbitrum: {
       timeout: 1800000,
-      url: 'https://nd-762-566-527.p2pify.com/4514bd12de6723b94346752e90e95cf4',
+      url: "https://nd-762-566-527.p2pify.com/4514bd12de6723b94346752e90e95cf4",
       gasPrice: 100000000,
       chainId: 42161,
-      accounts: [getKey('arbitrum', 'deployer'), getKey('arbitrum', 'admin')]
+      accounts: [getKey("arbitrum", "deployer"), getKey("arbitrum", "admin")],
     },
     fuji: {
-      url: 'https://api.avax-test.network/ext/bc/C/rpc',
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
       gasPrice: 225000000000,
       chainId: 43113,
-      accounts: [getKey('fuji', 'deployer'), getKey('fuji', 'admin')]
+      accounts: [getKey("fuji", "deployer"), getKey("fuji", "admin")],
     },
     avalanche: {
-      url: 'https://api.avax.network/ext/bc/C/rpc',
+      url: "https://api.avax.network/ext/bc/C/rpc",
       // url: 'https://rpc.ankr.com/avalanche',
       gasPrice: 100000000000,
+      // @richu
+      // gasPrice: null, // Use EIP-1559 parameters instead
+      maxFeePerGas: 3000000000, // 3 Gwei
+      maxPriorityFeePerGas: 2000000000, // 2 Gwei
       chainId: 43114,
-      accounts: [getKey('avalanche', 'deployer'), getKey('avalanche', 'admin')]
+      accounts: [getKey("avalanche", "deployer"), getKey("avalanche", "admin")],
     },
     mainnet_test: {
-      url: 'https://api.avax.network/ext/bc/C/rpc',
+      url: "https://api.avax.network/ext/bc/C/rpc",
       gasPrice: 100000000000,
       chainId: 43114,
-      accounts: [getKey('avalanche', 'deployer'), getKey('avalanche', 'admin')]
-    }
+      accounts: [getKey("avalanche", "deployer"), getKey("avalanche", "admin")],
+    },
   },
   paths: {
-    tests: "./test"
+    tests: "./test",
   },
   watcher: {
     compilation: {
@@ -96,32 +113,34 @@ export default {
     ci: {
       tasks: [
         "clean",
-        {command: "compile", params: {quiet: true}},
-        {command: "test", params: {noCompile: true}}
+        { command: "compile", params: { quiet: true } },
+        { command: "test", params: { noCompile: true } },
       ],
     },
     test: {
-      tasks: [{command: 'test', params: {noCompile: true, testFiles: ['{path}']}}],
-      files: ['./test/*.ts'],
-      verbose: true
-    }
+      tasks: [
+        { command: "test", params: { noCompile: true, testFiles: ["{path}"] } },
+      ],
+      files: ["./test/*.ts"],
+      verbose: true,
+    },
   },
   mocha: {
     "allow-uncaught": true,
-    timeout: 5000000
+    timeout: 5000000,
   },
   namedAccounts: {
-      deployer: 0,
-      admin: 1
+    deployer: 0,
+    admin: 1,
   },
   etherscan: {
     apiKey: {
       avalanche: "8ZZX5UV18YJKIK4FNQCF3M699VU5D6AGC4",
       arbitrumOne: "XR227KGAGUXB92WI65EHYYGNFD8EXSR1H1",
-      avalancheFujiTestnet: "8ZZX5UV18YJKIK4FNQCF3M699VU5D6AGC4"
-    }
+      avalancheFujiTestnet: "8ZZX5UV18YJKIK4FNQCF3M699VU5D6AGC4",
+    },
   },
   deploy: {
-    skipIfAlreadyDeployed: true
-  }
+    skipIfAlreadyDeployed: true,
+  },
 };
