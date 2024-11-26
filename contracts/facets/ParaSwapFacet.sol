@@ -82,7 +82,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     ///@notice multiSwap data Struct from ParaSwap Github
     /// https://github.com/paraswap/augustus-v5/blob/d297477b8fc7be65c337b0cf2bc21f4f7f925b68/contracts/routers/MultiPath.sol#L43
     /// https://github.com/paraswap/augustus-v5/blob/d297477b8fc7be65c337b0cf2bc21f4f7f925b68/contracts/lib/Utils.sol#L61
-    /// @dev test fails with stack too deep error. Selector is 0xa94e78ef
+    /// @dev test passes, but haven't decoded the actual args yet due to lack of object being returned by API. Selector is 0xa94e78ef
     //////******* MultiSwap Structs Begin *******//////// 
     /**
      * @param fromToken Address of the source token
@@ -130,14 +130,15 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
 
     //////******* MultiSwap Struct End *******//////// 
 
-    /// SellData cut in half to try and avoid stack too deep///
+    /// SellData cut in half to  avoid stack too deep///
+    ///@dev Forsaken Path[], only caring about the other args
     struct SellDataOne{
         address fromToken;
         uint256 fromAmount;
         uint256 toAmount;
         uint256 expectedAmount;
         address payable beneficiary;
-        Path[] path;
+        // Path[] path;
     }
 
     struct SellDataTwo{
@@ -308,8 +309,8 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         } else if(selector == SIMPLESWAP_SELECTOR){
             _decodeSimpleSwapData(data);
         } else if(selector == MULTISWAP_SELECTOR){
-            // _decodeMultiSwapData(data);
-            console.log("MultiSwap PlaceHolder");
+            _decodeMultiSwapData(data);
+            // console.log("MultiSwap PlaceHolder");
         } else {
             console.log("Not My Selector!");
         }
@@ -424,11 +425,18 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             console.log(decodedData.beneficiary);
     }
 
-    function _decodeMultiSwapData(bytes memory _data) internal pure {
+    function _decodeMultiSwapData(bytes calldata _data) internal pure {
             // SellData memory decodedData = abi.decode(_data, (SellData));
+            ///@dev forsaking Path[] dynamic array to avoid stack too deep error
             SellDataOne memory decodedDataOne;
             SellDataTwo memory decodedDataTwo;
-            (decodedDataOne,decodedDataTwo) = abi.decode(_data, (SellDataOne,SellDataTwo));
+            ///@dev SellDataTwo struct has five elements, with 32 bytes each. So the latter half is 160 bytes long
+            uint256 dataSliceSecondHalfBeginning = _data.length - 160;
+            ///@dev getting the first half
+            decodedDataOne = abi.decode(_data[:160], (SellDataOne));
+            ///@dev getting the latter half 
+            decodedDataTwo = abi.decode(_data[dataSliceSecondHalfBeginning:], (SellDataTwo));
+            // (decodedDataOne,decodedDataTwo) = abi.decode(_data, (SellDataOne,SellDataTwo));
             console.log("Decoding MultiSwap Data");
             console.log("From Token:");
             console.log(decodedDataOne.fromToken);
