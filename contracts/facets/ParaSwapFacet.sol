@@ -428,16 +428,10 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     function _decodeMultiSwapData(bytes calldata _data) internal pure {
             // SellData memory decodedData = abi.decode(_data, (SellData));
             ///@dev forsaking Path[] dynamic array to avoid stack too deep error
-            SellDataOne memory decodedDataOne;
-            SellDataTwo memory decodedDataTwo;
-            ///@dev SellDataTwo struct has five elements, with 32 bytes each. So the latter half is 160 bytes long
-            uint256 dataSliceSecondHalfBeginning = _data.length - 160;
-            ///@dev getting the first half
-            decodedDataOne = abi.decode(_data[:160], (SellDataOne));
-            ///@dev getting the latter half 
-            decodedDataTwo = abi.decode(_data[dataSliceSecondHalfBeginning:], (SellDataTwo));
-            // (decodedDataOne,decodedDataTwo) = abi.decode(_data, (SellDataOne,SellDataTwo));
             console.log("Decoding MultiSwap Data");
+            SellDataOne memory decodedDataOne;
+            decodedDataOne = abi.decode(_data[:160], (SellDataOne));
+            console.log("Decoded the First Struct!");
             console.log("From Token:");
             console.log(decodedDataOne.fromToken);
             console.log("From Amount:");
@@ -448,14 +442,19 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             console.log(decodedDataOne.expectedAmount);
             console.log("Beneficiary:");
             console.log(decodedDataOne.beneficiary);
+            SellDataTwo memory decodedDataTwo;
+            ///@dev getting the first half
+            ///@dev SellDataTwo struct has five elements, with 32 bytes each. So the latter half is 160 bytes long
+            uint256 dataSliceSecondHalfBeginning = _data.length - 192;
+            ///@dev getting the second half 
+            decodedDataTwo = abi.decode(_data[dataSliceSecondHalfBeginning:], (SellDataTwo));
+            // (decodedDataOne,decodedDataTwo) = abi.decode(_data, (SellDataOne,SellDataTwo));
             console.log("Fee Percent:");
             console.log(decodedDataTwo.feePercent);
             console.log("Deadline:");
             console.log(decodedDataTwo.deadline);
             console.log("Partner:");
             console.log(decodedDataTwo.partner);
-            // console.log("Path:");
-            // console.logBytes(decodedData.pathData);
             console.log("Permit:");
             console.logBytes(decodedDataTwo.permit);
             bytes memory uuidBytes = abi.encodePacked(decodedDataTwo.uuid);
