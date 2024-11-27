@@ -426,10 +426,58 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     }
 
     function _decodeMultiSwapData(bytes calldata _data) internal pure {
+
+        
+            // Data::
+            // 0x
+            // 0000000000000000000000000000000000000000000000000000000000000020
+            // 000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7
+            // 0000000000000000000000000000000000000000000000008ac7230489e80000
+            // 00000000000000000000000000000000000000000000000000000000189f2a9c
+            // 0000000000000000000000000000000000000000000000000000000019621c17
+            // start of path[]
+            // 0000000000000000000000000000000000000000000000000000000000000000
+            // 0000000000000000000000000000000000000000000000000000000000000160
+            // 0000000000000000000000000000000000000000000000000000000000000000
+            // 0100000000000000000000000000000000000000000000000000000000004000
+            // 0000000000000000000000000000000000000000000000000000000000000480
+            // 0000000000000000000000000000000000000000000000000000000067471f84
+            // f4ef425f2cb041e0b11268c9855087ba00000000000000000000000000000000
+            // 0000000000000000000000000000000000000000000000000000000000000001
+            // 0000000000000000000000000000000000000000000000000000000000000020
+            // 000000000000000000000000b97ef9ef8734c71904d8002f8b6bc66dd9c48a6e
+            // 0000000000000000000000000000000000000000000000000000000000000000
+            // 0000000000000000000000000000000000000000000000000000000000000060
+            // 0000000000000000000000000000000000000000000000000000000000000001
+            // 0000000000000000000000000000000000000000000000000000000000000020
+            // 0000000000000000000000005fc6a951c5e279d77c4d37f4aa14dae0187bfd2a
+            // 0000000000000000000000000000000000000000000000000000000000002710
+            // 0000000000000000000000000000000000000000000000000000000000000000
+            // 0000000000000000000000000000000000000000000000000000000000000080
+            // 0000000000000000000000000000000000000000000000000000000000000001
+            // 0000000000000000000000000000000000000000000000000000000000000020
+            // 0000000000000000000000000000000000000000000000000000000000000005
+            // 00000000000000000000000033895c09a0ec0718ce66ab35dfd0b656d77cd053
+            // 0000000000000000000000000000000000000000000000000000000000002710
+            // 00000000000000000000000000000000000000000000000000000000000000a0
+            // 0000000000000000000000000000000000000000000000000000000000000000
+            // 00000000000000000000000000000000000000000000000000000000000000c0
+            // 0000000000000000000000000000000000000000000000000000000000000020
+            // 0000000000000000000000000000000000000000000000000000000000000040
+            // end of path[]
+            // 0000000000000000000000000000000000000000000000000000000067504e4e
+            // 000000000000000000000000000000000000000000000000000000000000002b
+            // b31f66aa3c1e785363f0875a1b74e27b85fd66c70001f4b97ef9ef8734c71904
+            // d8002f8b6bc66dd9c48a6e000000000000000000000000000000000000000000
+            // 0000000000000000000000000000000000000000000000000000000000000000
+            
+            
             // SellData memory decodedData = abi.decode(_data, (SellData));
             ///@dev forsaking Path[] dynamic array to avoid stack too deep error
             console.log("Decoding MultiSwap Data");
             SellDataOne memory decodedDataOne;
+            // SellDataOne's size 136 or 160 ? Is everything padded to 32 bytes? 
+            // Answer: 160, looks like. Everything does seem to be padded to 32 bytes.
             decodedDataOne = abi.decode(_data[:160], (SellDataOne));
             console.log("Decoded the First Struct!");
             console.log("From Token:");
@@ -442,24 +490,38 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             console.log(decodedDataOne.expectedAmount);
             console.log("Beneficiary:");
             console.log(decodedDataOne.beneficiary);
-            SellDataTwo memory decodedDataTwo;
+            uint256 dataLength = _data.length;
+            console.log("Data Length:");
+            console.log(dataLength);
+            // console.log("Data:");
+            // console.logBytes(_data);
+            // uint256 slicingStart = dataLength - 48;
+            uint256 deadline;
+            // bytes memory uuid;
+            deadline = abi.decode(_data[dataLength-64:dataLength-32], (uint256));
+            console.log("Deadline:");
+            console.log(deadline);
+            // bytes memory uuidBytes = abi.encodePacked(uuid);
+            // console.log("UUID:");
+            // console.logBytes(uuidBytes);
+            // SellDataTwo memory decodedDataTwo;
             ///@dev getting the first half
             ///@dev SellDataTwo struct has five elements, with 32 bytes each. So the latter half is 160 bytes long
-            uint256 dataSliceSecondHalfBeginning = _data.length - 192;
+            // uint256 dataSliceSecondHalfBeginning = _data.length - 192;
             ///@dev getting the second half 
-            decodedDataTwo = abi.decode(_data[dataSliceSecondHalfBeginning:], (SellDataTwo));
+            // decodedDataTwo = abi.decode(_data[dataSliceSecondHalfBeginning:], (SellDataTwo));
             // (decodedDataOne,decodedDataTwo) = abi.decode(_data, (SellDataOne,SellDataTwo));
-            console.log("Fee Percent:");
-            console.log(decodedDataTwo.feePercent);
-            console.log("Deadline:");
-            console.log(decodedDataTwo.deadline);
-            console.log("Partner:");
-            console.log(decodedDataTwo.partner);
-            console.log("Permit:");
-            console.logBytes(decodedDataTwo.permit);
-            bytes memory uuidBytes = abi.encodePacked(decodedDataTwo.uuid);
-            console.log("UUID:");
-            console.logBytes(uuidBytes);
+            // console.log("Fee Percent:");
+            // console.log(decodedDataTwo.feePercent);
+            // console.log("Deadline:");
+            // console.log(decodedDataTwo.deadline);
+            // console.log("Partner:");
+            // console.log(decodedDataTwo.partner);
+            // console.log("Permit:");
+            // console.logBytes(decodedDataTwo.permit);
+            // bytes memory uuidBytes = abi.encodePacked(decodedDataTwo.uuid);
+            // console.log("UUID:");
+            // console.logBytes(uuidBytes);
     }
 
     modifier onlyOwner() {
