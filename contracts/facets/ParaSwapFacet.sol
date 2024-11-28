@@ -310,6 +310,8 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             _decodeSimpleSwapData(data);
         } else if(selector == MULTISWAP_SELECTOR){
             _decodeMultiSwapData(data);
+            ///@dev this errors with implicit conversion error
+            // _decodeMultiSwapDataStruct(data);  
             // console.log("MultiSwap PlaceHolder");
         } else {
             console.log("Not My Selector!");
@@ -522,6 +524,39 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             // bytes memory uuidBytes = abi.encodePacked(decodedDataTwo.uuid);
             // console.log("UUID:");
             // console.logBytes(uuidBytes);
+    }
+
+    ///@dev trying to decode data with struct as in the multiPath implementation, but errors since it's a bytes array originally
+    /// https://github.com/paraswap/augustus-v5/blob/d297477b8fc7be65c337b0cf2bc21f4f7f925b68/contracts/routers/MultiPath.sol#L43
+    function _decodeMultiSwapDataStruct(SellData memory _data) internal pure{
+        console.log("Decoding MultiSwap Data As Struct");
+        console.log("From Token:");
+        console.log(_data.fromToken);
+        // console.log("To Token:");
+        // console.log(_data.toToken);
+        console.log("From Amount:");
+        console.log(_data.fromAmount);
+        console.log("To Amount:");
+        console.log(_data.toAmount);
+        console.log("Expected Amount:");
+        console.log(_data.expectedAmount);
+        console.log("Beneficiary:");
+        console.log(_data.beneficiary);
+        console.log("Fee Percent:");
+        console.log(_data.feePercent);
+        console.log("Deadline:");
+        console.log(_data.deadline);
+        console.log("Partner:");
+        console.log(_data.partner);
+        console.log("Permit:");
+        console.logBytes(_data.permit);
+        Path[] memory path = _data.path;
+        address toToken = path[path.length - 1].to;
+        console.log("To Token:");
+        console.log(toToken);
+        bytes memory uuidBytes = abi.encodePacked(_data.uuid);
+        console.log("UUID:");
+        console.logBytes(uuidBytes);
     }
 
     modifier onlyOwner() {
