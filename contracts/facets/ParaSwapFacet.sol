@@ -19,16 +19,18 @@ import "hardhat/console.sol";
 contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     using TransferHelper for address;
 
-    address private constant PARA_TRANSFER_PROXY =
-        0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
-    address private constant PARA_ROUTER =
-        0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
+    address private constant PARA_TRANSFER_PROXY = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
+    ///@dev paraSwap v6.2 router
+    address private constant PARA_ROUTER = 0x6A000F20005980200259B80c5102003040001068;
 
     
     ///@notice selectors for paraSwapV2 data decoding
     bytes4 private constant DIRECT_UNI_V3_SELECTOR = 0xa6886da9;
     bytes4 private constant SIMPLESWAP_SELECTOR = 0x54e3f31b;
     bytes4 private constant MULTISWAP_SELECTOR = 0xa94e78ef;
+
+    ///@notice selectors for paraSwapV6 data decoding
+    bytes4 private constant SWAP_EXACT_AMOUNT_IN_SELECTOR = 0xe3ead59e;
     
     struct SwapTokensDetails {
         bytes32 tokenSoldSymbol;
@@ -39,116 +41,44 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 initialBoughtTokenBalance;
     }
 
-    
-    ///@notice struct for directUniV3Swap method for ParaSwapRouter, derived manually from real transaction data onchain.
-    ///@dev successfully decodes data in test. Selector is 0xa6886da9
-    struct DirectUniswapV3SwapData {
-        address fromToken;
-        address toToken;
-        address exchange;
+    ////////////////////****** PARASWAPV6 STRUCTS *////////////////////
+
+
+    /*//////////////////////////////////////////////////////////////
+                            GENERIC SWAP DATA
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Struct containg data for generic swapExactAmountIn/swapExactAmountOut
+    /// @param srcToken The token to swap from
+    /// @param destToken The token to swap to
+    /// @param fromAmount The amount of srcToken to swap
+    /// = amountIn for swapExactAmountIn and maxAmountIn for swapExactAmountOut
+    /// @param toAmount The minimum amount of destToken to receive
+    /// = minAmountOut for swapExactAmountIn and amountOut for swapExactAmountOut
+    /// @param quotedAmount The quoted expected amount of destToken/srcToken
+    /// = quotedAmountOut for swapExactAmountIn and quotedAmountIn for swapExactAmountOut
+    /// @param metadata Packed uuid and additional metadata
+    /// @param beneficiary The address to send the swapped tokens to
+    /// @dev GenericData size: since all elements are lefPadded to 32 bytes, size is 32*7 = 224
+    struct GenericData {
+        address srcToken;       // changing IERC20 to address for possible ease of decoding
+        address destToken;      // changing IERC20 to address for possible ease of decoding
         uint256 fromAmount;
         uint256 toAmount;
-        uint256 expectedAmount;
-        uint256 feePercent;
-        uint256 deadline;
-        address partner;
-        bool isApproved;
-        address beneficiary;
-        bytes path;
-        bytes permit;
-        bytes16 uuid;
-    }
-
-    /// @notice simpleSwap data Struct from ParaSwapRouter, manually derived from real transaction data onchain.
-    /// @dev test passes, data gets decoded. Selector is 0x54e3f31b
-    struct SimpleSwapData{
-        address fromToken; 
-        address toToken; 
-        uint256 fromAmount; 
-        uint256 toAmount; 
-        uint256 expectedAmount; 
-        address[] callees; 
-        bytes exchangeData;
-        uint256[] startIndexes; 
-        uint256[] values; 
-        address beneficiary; 
-        address partner; 
-        uint256 feePercent; 
-        bytes permit; 
-        uint256 deadline; 
-        bytes16 uuid;
-    }
-
-    ///@notice multiSwap data Struct from ParaSwap Github
-    /// https://github.com/paraswap/augustus-v5/blob/d297477b8fc7be65c337b0cf2bc21f4f7f925b68/contracts/routers/MultiPath.sol#L43
-    /// https://github.com/paraswap/augustus-v5/blob/d297477b8fc7be65c337b0cf2bc21f4f7f925b68/contracts/lib/Utils.sol#L61
-    /// @dev test passes, but haven't decoded the actual args yet due to lack of object being returned by API. Selector is 0xa94e78ef
-    //////******* MultiSwap Structs Begin *******//////// 
-    /**
-     * @param fromToken Address of the source token
-     * @param fromAmount Amount of source tokens to be swapped
-     * @param toAmount Minimum destination token amount expected out of this swap
-     * @param expectedAmount Expected amount of destination tokens without slippage
-     * @param beneficiary Beneficiary address
-     * 0 then 100% will be transferred to beneficiary. Pass 10000 for 100%
-     * @param path Route to be taken for this swap to take place
-     */
-    struct SellData {
-        address fromToken;
-        uint256 fromAmount;
-        uint256 toAmount;
-        uint256 expectedAmount;
+        uint256 quotedAmount;
+        bytes32 metadata;
         address payable beneficiary;
-        Path[] path;
-        address payable partner;
-        uint256 feePercent;
+    }
+
+    /// @notice struct constructed from swapExactAmountIn interface from developer docs
+    /// https://developers.paraswap.network/augustus-swapper/augustus-v6.2
+    struct SwapExactAmountIn{
+        address executor;
+        GenericData swapData;
+        uint256 partnerAndFee;
         bytes permit;
-        uint256 deadline;
-        bytes16 uuid;
+        bytes executorData;
     }
-
-    struct Path {
-        address to;
-        uint256 totalNetworkFee; //NOT USED - Network fee is associated with 0xv3 trades
-        Adapter[] adapters;
-    }
-
-    struct Adapter {
-        address payable adapter;
-        uint256 percent;
-        uint256 networkFee; //NOT USED
-        Route[] route;
-    }
-
-    struct Route {
-        uint256 index; //Adapter at which index needs to be used
-        address targetExchange;
-        uint256 percent;
-        bytes payload;
-        uint256 networkFee; //NOT USED - Network fee is associated with 0xv3 trades
-    }
-
-    //////******* MultiSwap Struct End *******//////// 
-
-    /// SellData cut in half to  avoid stack too deep///
-    ///@dev Forsaken Path[], only caring about the other args
-    struct SellDataOne{
-        address fromToken;
-        uint256 fromAmount;
-        uint256 toAmount;
-        uint256 expectedAmount;
-        address payable beneficiary;
-        // Path[] path;
-    }
-
-    struct SellDataTwo{
-        address payable partner;
-        uint256 feePercent;
-        bytes permit;
-        uint256 deadline;
-        bytes16 uuid;
-    }
-
 
     
     
@@ -277,63 +207,29 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         require(minOut > 0, "minOut needs to be > 0");
         require(fromAmount > 0, "Amount of tokens to sell has to be greater than 0");
 
-        console.log("Inside ParaSwap v2");
+        console.log("Inside ParaSwapV2 Method");
         bytes memory selectorBytes = abi.encodePacked(selector);
         console.log("Selector: ");
         console.logBytes(selectorBytes);
-        /// @dev would need to slice the data before decoding, I think
-        // {
-
-        //     bytes memory firstThreeAddresses = data[:96];
-        //     address fromTokenFromData;
-        //     address toTokenFromData;
-        //     address exchangeFromData;
-        //     (fromTokenFromData, toTokenFromData, exchangeFromData) = abi.decode(
-        //         firstThreeAddresses,
-        //         (address, address, address)
-        //     );
-        //     console.log("FromToken: ");
-        //     console.log(fromTokenFromData);
-        //     console.log("ToToken: ");
-        //     console.log(toTokenFromData);
-        //     console.log("Exchange: ");
-        //     console.log(exchangeFromData);
-        // }
-
-        ///@dev special scoping to avoid stack too deep error. Update: scoping inside if else statements, still valid
-        /// https://stackoverflow.com/questions/74578910/how-to-fix-compilererror-stack-too-deep-try-compiling-with-via-ir-cli
-        /// UniSwap does the same apparently: https://ethereum.stackexchange.com/questions/6061/error-while-compiling-stack-too-deep
         
-        if(selector == DIRECT_UNI_V3_SELECTOR){
-            _decodeDirectUniV3SwapData(data);
-        } else if(selector == SIMPLESWAP_SELECTOR){
-            _decodeSimpleSwapData(data);
-        } else if(selector == MULTISWAP_SELECTOR){
-            _decodeMultiSwapData(data);
-            ///@dev this errors with implicit conversion error
-            // _decodeMultiSwapDataStruct(data);  
-            // console.log("MultiSwap PlaceHolder");
+        if(selector == SWAP_EXACT_AMOUNT_IN_SELECTOR){
+            console.log("Got SwapExactAmountIn Selector!");
+            console.log("Data length: ");
+            console.log(data.length);
+            // console.log("Data: ");            
+            // console.logBytes(data);
+            // _decodeGenericData(data);
+            _decodeSwapExactAmountInData(data);
         } else {
             console.log("Not My Selector!");
         }
 
-        // {
-        //     DecodedData memory decodedData = abi.decode(data, (DecodedData));
-        //     console.log("Beneficiary:");
-        //     console.log(decodedData.beneficiaryData);
-        //     console.log("Path:");
-        //     console.logBytes(decodedData.pathData);
-        //     console.log("Permit:");
-        //     console.logBytes(decodedData.permitData);
-        //     bytes memory uuidBytes = abi.encodePacked(decodedData.uuidData);
-        //     console.log("UUID:");
-        //     console.logBytes(uuidBytes);
-        // }
-        address(swapTokensDetails.soldToken).safeApprove(PARA_TRANSFER_PROXY, 0);
-        address(swapTokensDetails.soldToken).safeApprove(
-            PARA_TRANSFER_PROXY,
-            fromAmount
-        );
+        
+        // address(swapTokensDetails.soldToken).safeApprove(PARA_TRANSFER_PROXY, 0);
+        // address(swapTokensDetails.soldToken).safeApprove(
+        //     PARA_TRANSFER_PROXY,
+        //     fromAmount
+        // );
 
         
         
@@ -364,200 +260,59 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         );
     }
 
-    function _decodeDirectUniV3SwapData(bytes memory _data) internal pure{
-        DirectUniswapV3SwapData memory decodedData = abi.decode(_data, (DirectUniswapV3SwapData));
-            console.log("Decoding directUniV3Swap Data");
-            console.log("From Token:");
-            console.log(decodedData.fromToken);
-            console.log("To Token:");
-            console.log(decodedData.toToken);
-            console.log("Exchange:");
-            console.log(decodedData.exchange);
-            console.log("From Amount:");
-            console.log(decodedData.fromAmount);
-            console.log("To Amount:");
-            console.log(decodedData.toAmount);
-            console.log("Expected Amount:");
-            console.log(decodedData.expectedAmount);
-            console.log("Fee Percent:");
-            console.log(decodedData.feePercent);
-            console.log("Deadline:");
-            console.log(decodedData.deadline);
-            console.log("Partner:");
-            console.log(decodedData.partner);
-            console.log("Is Approved:");
-            console.log(decodedData.isApproved);
-            // console.log("Beneficiary:");
-            // console.log(decodedData.beneficiaryData);
-            // console.log("Path:");
-            // console.logBytes(decodedData.pathData);
-            // console.log("Permit:");
-            // console.logBytes(decodedData.permitData);
-            // bytes memory uuidBytes = abi.encodePacked(decodedData.uuidData);
-            // console.log("UUID:");
-            // console.logBytes(uuidBytes);
-
-    }
-
-    function _decodeSimpleSwapData(bytes memory _data) internal pure{
-        SimpleSwapData memory decodedData = abi.decode(_data, (SimpleSwapData));
-            console.log("Decoding SimpleSwap Data");
-            console.log("From Token:");
-            console.log(decodedData.fromToken);
-            console.log("To Token:");
-            console.log(decodedData.toToken);
-            // console.log("Exchange:");
-            // console.log(decodedData.exchangeData);
-            console.log("From Amount:");
-            console.log(decodedData.fromAmount);
-            console.log("To Amount:");
-            console.log(decodedData.toAmount);
-            console.log("Expected Amount:");
-            console.log(decodedData.expectedAmount);
-            console.log("Exchange Data:");
-            bytes memory exchangeDataBytes = abi.encodePacked(decodedData.exchangeData);
-            console.logBytes(exchangeDataBytes);
-            console.log("Fee Percent:");
-            console.log(decodedData.feePercent);
-            console.log("Deadline:");
-            console.log(decodedData.deadline);
-            console.log("Partner:");
-            console.log(decodedData.partner);
-            console.log("Beneficiary:");
-            console.log(decodedData.beneficiary);
-    }
-
-    function _decodeMultiSwapData(bytes calldata _data) internal pure {
-
+    function _decodeSwapExactAmountInData(bytes calldata _data) internal pure {
         
-            // Data::
-            // 0x
-            // 0000000000000000000000000000000000000000000000000000000000000020
-            // 000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7
-            // 0000000000000000000000000000000000000000000000008ac7230489e80000
-            // 00000000000000000000000000000000000000000000000000000000189f2a9c
-            // 0000000000000000000000000000000000000000000000000000000019621c17
-            // start of path[]
-            // 0000000000000000000000000000000000000000000000000000000000000000
-            // 0000000000000000000000000000000000000000000000000000000000000160
-            // 0000000000000000000000000000000000000000000000000000000000000000
-            // 0100000000000000000000000000000000000000000000000000000000004000
-            // 0000000000000000000000000000000000000000000000000000000000000480
-            // 0000000000000000000000000000000000000000000000000000000067471f84
-            // f4ef425f2cb041e0b11268c9855087ba00000000000000000000000000000000
-            // 0000000000000000000000000000000000000000000000000000000000000001
-            // 0000000000000000000000000000000000000000000000000000000000000020
-            // 000000000000000000000000b97ef9ef8734c71904d8002f8b6bc66dd9c48a6e
-            // 0000000000000000000000000000000000000000000000000000000000000000
-            // 0000000000000000000000000000000000000000000000000000000000000060
-            // 0000000000000000000000000000000000000000000000000000000000000001
-            // 0000000000000000000000000000000000000000000000000000000000000020
-            // 0000000000000000000000005fc6a951c5e279d77c4d37f4aa14dae0187bfd2a
-            // 0000000000000000000000000000000000000000000000000000000000002710
-            // 0000000000000000000000000000000000000000000000000000000000000000
-            // 0000000000000000000000000000000000000000000000000000000000000080
-            // 0000000000000000000000000000000000000000000000000000000000000001
-            // 0000000000000000000000000000000000000000000000000000000000000020
-            // 0000000000000000000000000000000000000000000000000000000000000005
-            // 00000000000000000000000033895c09a0ec0718ce66ab35dfd0b656d77cd053
-            // 0000000000000000000000000000000000000000000000000000000000002710
-            // 00000000000000000000000000000000000000000000000000000000000000a0
-            // 0000000000000000000000000000000000000000000000000000000000000000
-            // 00000000000000000000000000000000000000000000000000000000000000c0
-            // 0000000000000000000000000000000000000000000000000000000000000020
-            // 0000000000000000000000000000000000000000000000000000000000000040
-            // end of path[]
-            // 0000000000000000000000000000000000000000000000000000000067504e4e
-            // 000000000000000000000000000000000000000000000000000000000000002b
-            // b31f66aa3c1e785363f0875a1b74e27b85fd66c70001f4b97ef9ef8734c71904
-            // d8002f8b6bc66dd9c48a6e000000000000000000000000000000000000000000
-            // 0000000000000000000000000000000000000000000000000000000000000000
-            
-            
-            // SellData memory decodedData = abi.decode(_data, (SellData));
-            ///@dev forsaking Path[] dynamic array to avoid stack too deep error
-            console.log("Decoding MultiSwap Data");
-            SellDataOne memory decodedDataOne;
-            // SellDataOne's size 136 or 160 ? Is everything padded to 32 bytes? 
-            // Answer: 160, looks like. Everything does seem to be padded to 32 bytes.
-            decodedDataOne = abi.decode(_data[:160], (SellDataOne));
-            console.log("Decoded the First Struct!");
-            console.log("From Token:");
-            console.log(decodedDataOne.fromToken);
-            console.log("From Amount:");
-            console.log(decodedDataOne.fromAmount);
-            console.log("To Amount:");
-            console.log(decodedDataOne.toAmount);
-            console.log("Expected Amount:");
-            console.log(decodedDataOne.expectedAmount);
-            console.log("Beneficiary:");
-            console.log(decodedDataOne.beneficiary);
-            uint256 dataLength = _data.length;
-            console.log("Data Length:");
-            console.log(dataLength);
-            // console.log("Data:");
-            // console.logBytes(_data);
-            // uint256 slicingStart = dataLength - 48;
-            uint256 deadline;
-            // bytes memory uuid;
-            deadline = abi.decode(_data[dataLength-64:dataLength-32], (uint256));
-            console.log("Deadline:");
-            console.log(deadline);
-            // bytes memory uuidBytes = abi.encodePacked(uuid);
-            // console.log("UUID:");
-            // console.logBytes(uuidBytes);
-            // SellDataTwo memory decodedDataTwo;
-            ///@dev getting the first half
-            ///@dev SellDataTwo struct has five elements, with 32 bytes each. So the latter half is 160 bytes long
-            // uint256 dataSliceSecondHalfBeginning = _data.length - 192;
-            ///@dev getting the second half 
-            // decodedDataTwo = abi.decode(_data[dataSliceSecondHalfBeginning:], (SellDataTwo));
-            // (decodedDataOne,decodedDataTwo) = abi.decode(_data, (SellDataOne,SellDataTwo));
-            // console.log("Fee Percent:");
-            // console.log(decodedDataTwo.feePercent);
-            // console.log("Deadline:");
-            // console.log(decodedDataTwo.deadline);
-            // console.log("Partner:");
-            // console.log(decodedDataTwo.partner);
-            // console.log("Permit:");
-            // console.logBytes(decodedDataTwo.permit);
-            // bytes memory uuidBytes = abi.encodePacked(decodedDataTwo.uuid);
-            // console.log("UUID:");
-            // console.logBytes(uuidBytes);
+        
+        
+        
+        
+        
+        
+        console.log("Inside _decodeSwapExactAmountInData, about to decode with SwapExactAmountIn");
+        address executor;
+        bytes memory executorBytes = _data[:32];
+        (executor) = abi.decode(executorBytes, (address));
+        console.log("Executor Address: ");
+        console.log(executor);
+        /// @dev generic data size is 224. So the entire struct would be from 32 to 224+32 positions
+        bytes memory genericDataBytes = _data[32:256];
+        _decodeGenericData(genericDataBytes);
+        // SwapExactAmountIn memory swapExactAmountIn = abi.decode(_data, (SwapExactAmountIn));
+        // console.log("swapExactAmountIn Struct Decoded ");
+        // console.log("Executor Address: ");
+        // console.log(swapExactAmountIn.executor);
+        // console.log("Partner And Fee Together as Int:");
+        // console.log(swapExactAmountIn.partnerAndFee);
+        // bytes memory permit = abi.encodePacked(swapExactAmountIn.permit);
+        // console.logBytes(permit);
+        // console.log("Executor Data: ");
+        // bytes memory executorData = abi.encodePacked(swapExactAmountIn.executorData);
+        // console.logBytes(executorData);
+        // console.log("Generic Data Being Sent to Another Internal Function! ");
+        // _decodeGenericData(abi.encode(swapExactAmountIn.swapData));
+
     }
 
-    ///@dev trying to decode data with struct as in the multiPath implementation, but errors since it's a bytes array originally
-    /// https://github.com/paraswap/augustus-v5/blob/d297477b8fc7be65c337b0cf2bc21f4f7f925b68/contracts/routers/MultiPath.sol#L43
-    function _decodeMultiSwapDataStruct(SellData memory _data) internal pure{
-        console.log("Decoding MultiSwap Data As Struct");
-        console.log("From Token:");
-        console.log(_data.fromToken);
-        // console.log("To Token:");
-        // console.log(_data.toToken);
-        console.log("From Amount:");
-        console.log(_data.fromAmount);
-        console.log("To Amount:");
-        console.log(_data.toAmount);
-        console.log("Expected Amount:");
-        console.log(_data.expectedAmount);
-        console.log("Beneficiary:");
-        console.log(_data.beneficiary);
-        console.log("Fee Percent:");
-        console.log(_data.feePercent);
-        console.log("Deadline:");
-        console.log(_data.deadline);
-        console.log("Partner:");
-        console.log(_data.partner);
-        console.log("Permit:");
-        console.logBytes(_data.permit);
-        Path[] memory path = _data.path;
-        address toToken = path[path.length - 1].to;
-        console.log("To Token:");
-        console.log(toToken);
-        bytes memory uuidBytes = abi.encodePacked(_data.uuid);
-        console.log("UUID:");
-        console.logBytes(uuidBytes);
+    function _decodeGenericData(bytes memory _data) internal pure {
+        GenericData memory genericData = abi.decode(_data, (GenericData));
+        console.log("genericData Struct Decoded ");
+        console.log("Source Token: ");
+        console.log(genericData.srcToken);
+        console.log("Destination Token: ");
+        console.log(genericData.destToken);
+        console.log("From Amount: ");
+        console.log(genericData.fromAmount);
+        console.log("To Amount: ");
+        console.log(genericData.toAmount);
+        console.log("Quoted Amount: ");
+        console.log(genericData.quotedAmount);
+        console.log("Metadata: ");
+        bytes memory metadata = abi.encodePacked(genericData.metadata);
+        console.logBytes(metadata);
+        console.log("Beneficiary: ");
+        console.log(genericData.beneficiary);
     }
+
 
     modifier onlyOwner() {
         DiamondStorageLib.enforceIsContractOwner();
