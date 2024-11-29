@@ -22,7 +22,8 @@
     "test:watch": "yarn hardhat test && yarn hardhat watch test",
     "ci:watch": "yarn hardhat watch ci",
     "prettier": "prettier --write 'contracts/**/*.sol'",
-    "size": "yarn run hardhat size-contracts"
+    "size": "yarn run hardhat size-contracts",
+    "testParaSwap": "npx hardhat test test/integration/avalanche/para-swap.test.ts --network localAvalanche"
   },
   "dependencies": {
     "@apollo/client": "^3.7.2",
