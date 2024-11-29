@@ -90,7 +90,10 @@ describe("ParaSwap", () => {
         /// forcing API to always give a multiSwap route. For testing multiSwap swapData dea
         // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L74
         // excludeContractMethods: ["simpleSwap", "directUniV3Swap"],
-        includeContractMethods: "multiSwap",
+        includeContractMethods: "swapExactAmountIn",
+        // version specification
+        // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L129
+        version: 6.2,
         // excludeDEXS: "UniswapV3",
       });
       const txParams = await paraSwapMin.swap.buildTx(
