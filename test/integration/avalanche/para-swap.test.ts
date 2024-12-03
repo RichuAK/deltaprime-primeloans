@@ -263,7 +263,7 @@ describe("ParaSwap", () => {
         swapData.selector,
         swapData.data,
         TOKEN_ADDRESSES["AVAX"],
-        toWei("10"),
+        toWei("10"), ///commenting out parameters so that they would be directly parsed from swap data v6.2
         TOKEN_ADDRESSES["USDC"],
         minOut
       );

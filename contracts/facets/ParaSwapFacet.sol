@@ -187,7 +187,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     function paraSwapV2(
         bytes4 selector,
         bytes calldata data,  ///@dev changing data from memory to calldata for slicing
-        address fromToken,
+        address fromToken,    /// parameters from here on out are not used in the function, but keeping them for the test file.
         uint256 fromAmount,
         address toToken,
         uint256 minOut
@@ -198,20 +198,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         noBorrowInTheSameBlock
         remainsSolvent
     {
-        SwapTokensDetails memory swapTokensDetails = getInitialTokensDetails(
-            fromToken,
-            toToken
-        );
-
-        require(swapTokensDetails.soldToken.balanceOf(address(this)) >= fromAmount, "Insufficient balance");
-        require(minOut > 0, "minOut needs to be > 0");
-        require(fromAmount > 0, "Amount of tokens to sell has to be greater than 0");
-
-        console.log("Inside ParaSwapV2 Method");
-        bytes memory selectorBytes = abi.encodePacked(selector);
-        console.log("Selector: ");
-        console.logBytes(selectorBytes);
-        
+        GenericData memory genericDataFromSwapData;
         if(selector == SWAP_EXACT_AMOUNT_IN_SELECTOR){
             console.log("Got SwapExactAmountIn Selector!");
             console.log("Data length: ");
@@ -219,17 +206,33 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             // console.log("Data: ");            
             // console.logBytes(data);
             // _decodeGenericData(data);
-            _decodeSwapExactAmountInData(data);
+            genericDataFromSwapData = _decodeSwapExactAmountInData(data);
         } else {
             console.log("Not My Selector!");
         }
+        SwapTokensDetails memory swapTokensDetails = getInitialTokensDetails(
+            genericDataFromSwapData.srcToken,
+            genericDataFromSwapData.destToken
+        );
+
+        require(swapTokensDetails.soldToken.balanceOf(address(this)) >= genericDataFromSwapData.fromAmount, "Insufficient balance");
+        /// @dev do we really need this check? In what scenario would ParaSwap API return minOut as 0
+        require(genericDataFromSwapData.toAmount > 0, "minOut needs to be > 0");
+        /// @dev do we really need this check, again.
+        require(genericDataFromSwapData.fromAmount > 0, "Amount of tokens to sell has to be greater than 0");
+
+        console.log("Inside ParaSwapV2 Method");
+        bytes memory selectorBytes = abi.encodePacked(selector);
+        console.log("Selector: ");
+        console.logBytes(selectorBytes);
+        
 
         
-        // address(swapTokensDetails.soldToken).safeApprove(PARA_TRANSFER_PROXY, 0);
-        // address(swapTokensDetails.soldToken).safeApprove(
-        //     PARA_TRANSFER_PROXY,
-        //     fromAmount
-        // );
+        address(swapTokensDetails.soldToken).safeApprove(PARA_ROUTER, 0);
+        address(swapTokensDetails.soldToken).safeApprove(
+            PARA_ROUTER,
+            genericDataFromSwapData.fromAmount 
+        );
 
         
         
@@ -241,7 +244,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 boughtTokenFinalAmount = swapTokensDetails.boughtToken.balanceOf(
             address(this)
         ) - swapTokensDetails.initialBoughtTokenBalance;
-        require(boughtTokenFinalAmount >= minOut, "Too little received");
+        require(boughtTokenFinalAmount >= genericDataFromSwapData.toAmount, "Too little received");
 
         uint256 soldTokenFinalAmount = swapTokensDetails.initialSoldTokenBalance -
                 swapTokensDetails.soldToken.balanceOf(address(this));
@@ -260,13 +263,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         );
     }
 
-    function _decodeSwapExactAmountInData(bytes calldata _data) internal pure {
-        
-        
-        
-        
-        
-        
+    function _decodeSwapExactAmountInData(bytes calldata _data) internal returns(GenericData memory) {
         
         console.log("Inside _decodeSwapExactAmountInData, about to decode with SwapExactAmountIn");
         address executor;
@@ -276,7 +273,21 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         console.log(executor);
         /// @dev generic data size is 224. So the entire struct would be from 32 to 224+32 positions
         bytes memory genericDataBytes = _data[32:256];
-        _decodeGenericData(genericDataBytes);
+        GenericData memory _genericData = _decodeGenericData(genericDataBytes);
+        (uint256 partnerAndFee) = abi.decode(_data[256:288], (uint256));
+        console.log("Partner And Fee: ");
+        console.log(partnerAndFee);
+        return _genericData;
+        // (uint96 fee) = abi.decode(_data[256:268], (uint96));
+        // console.log("Fee in Partner and Fee:");
+        // console.log(fee);
+        // (address partner) = abi.decode(_data[268:288], (address));
+        // console.log("Partner in Partner and Fee:");
+        // console.log(partner);
+        // bytes memory partnerAndFee = _data[256:288];
+        // uint96 fee;
+        // address partner;
+        // (fee, partner) = abi.decode(partnerAndFee, (uint96, address));
         // SwapExactAmountIn memory swapExactAmountIn = abi.decode(_data, (SwapExactAmountIn));
         // console.log("swapExactAmountIn Struct Decoded ");
         // console.log("Executor Address: ");
@@ -293,7 +304,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
 
     }
 
-    function _decodeGenericData(bytes memory _data) internal pure {
+    function _decodeGenericData(bytes memory _data) internal returns(GenericData memory) {
         GenericData memory genericData = abi.decode(_data, (GenericData));
         console.log("genericData Struct Decoded ");
         console.log("Source Token: ");
@@ -311,6 +322,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         console.logBytes(metadata);
         console.log("Beneficiary: ");
         console.log(genericData.beneficiary);
+        return genericData;
     }
 
 
