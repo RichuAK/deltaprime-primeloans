@@ -31,6 +31,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
 
     ///@notice selectors for paraSwapV6 data decoding
     bytes4 private constant SWAP_EXACT_AMOUNT_IN_SELECTOR = 0xe3ead59e;
+    bytes4 private constant SWAP_EXACT_AMOUNT_IN_ON_UNI_V3_SELECTOR = 0x876a02f6;
     
     struct SwapTokensDetails {
         bytes32 tokenSoldSymbol;
@@ -78,6 +79,19 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 partnerAndFee;
         bytes permit;
         bytes executorData;
+    }
+
+    /// @notice struct constructed based swapExactAmountInOnUniswapV3 from developer docs. 
+    /// @dev changed srctToken and destToken to address from IERC20 for ease of decoding
+    struct UniswapV3Data {
+        address srcToken;
+        address destToken;
+        uint256 fromAmount;
+        uint256 toAmount;
+        uint256 quotedAmount;
+        bytes32 metadata;
+        address payable beneficiary;
+        bytes pools;
     }
 
     
@@ -198,45 +212,43 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         noBorrowInTheSameBlock
         remainsSolvent
     {
-        GenericData memory genericDataFromSwapData;
+        uint256 fromTokenAmount;
+        uint256 toTokenAmount;
+        address fromTokenAddress;
+        address toTokenAddress;
         if(selector == SWAP_EXACT_AMOUNT_IN_SELECTOR){
             console.log("Got SwapExactAmountIn Selector!");
             console.log("Data length: ");
             console.log(data.length);
-            // console.log("Data: ");            
-            // console.logBytes(data);
-            // _decodeGenericData(data);
-            genericDataFromSwapData = _decodeSwapExactAmountInData(data);
+            (fromTokenAddress, toTokenAddress, fromTokenAmount, toTokenAmount) = _decodeSwapExactAmountInData(data);
+        } else if(selector == SWAP_EXACT_AMOUNT_IN_ON_UNI_V3_SELECTOR){
+            console.log("Got SwapExactAmountInOnUniV3 Selector!");
+            console.log("Data length: ");
+            console.log(data.length);
+            (fromTokenAddress, toTokenAddress, fromTokenAmount, toTokenAmount) = _decodeSwapExactAmountInOnUniV3Data(data);
         } else {
             console.log("Not My Selector!");
         }
-        SwapTokensDetails memory swapTokensDetails = getInitialTokensDetails(
-            genericDataFromSwapData.srcToken,
-            genericDataFromSwapData.destToken
-        );
+        SwapTokensDetails memory swapTokensDetails = getInitialTokensDetails(fromTokenAddress, toTokenAddress);
 
-        require(swapTokensDetails.soldToken.balanceOf(address(this)) >= genericDataFromSwapData.fromAmount, "Insufficient balance");
+        require(swapTokensDetails.soldToken.balanceOf(address(this)) >= fromTokenAmount, "Insufficient balance");
         /// @dev do we really need this check? In what scenario would ParaSwap API return minOut as 0
-        require(genericDataFromSwapData.toAmount > 0, "minOut needs to be > 0");
+        /// @dev toTokenAmount is data.toAmount, which is minOut, as per paraSwap docs
+        require(toTokenAmount > 0, "minOut needs to be > 0");
         /// @dev do we really need this check, again.
-        require(genericDataFromSwapData.fromAmount > 0, "Amount of tokens to sell has to be greater than 0");
-
-        console.log("Inside ParaSwapV2 Method");
-        bytes memory selectorBytes = abi.encodePacked(selector);
-        console.log("Selector: ");
-        console.logBytes(selectorBytes);
+        require(fromTokenAmount > 0, "Amount of tokens to sell has to be greater than 0");
         
 
         
         address(swapTokensDetails.soldToken).safeApprove(PARA_ROUTER, 0);
         address(swapTokensDetails.soldToken).safeApprove(
             PARA_ROUTER,
-            genericDataFromSwapData.fromAmount 
+            fromTokenAmount 
         );
 
         
         
-        (bool success, ) = PARA_ROUTER.call((abi.encodePacked(selector, data)));
+        (bool success, ) = PARA_ROUTER.call(abi.encodePacked(selector, data));
         require(success, "Swap failed");
         
         
@@ -244,7 +256,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 boughtTokenFinalAmount = swapTokensDetails.boughtToken.balanceOf(
             address(this)
         ) - swapTokensDetails.initialBoughtTokenBalance;
-        require(boughtTokenFinalAmount >= genericDataFromSwapData.toAmount, "Too little received");
+        require(boughtTokenFinalAmount >= toTokenAmount, "Too little received");
 
         uint256 soldTokenFinalAmount = swapTokensDetails.initialSoldTokenBalance -
                 swapTokensDetails.soldToken.balanceOf(address(this));
@@ -263,7 +275,14 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         );
     }
 
-    function _decodeSwapExactAmountInData(bytes calldata _data) internal returns(GenericData memory) {
+    function _decodeSwapExactAmountInOnUniV3Data(bytes calldata _data) internal pure returns(address srcToken, address destToken, uint256 fromAmount, uint256 toAmount) {
+        console.log("Inside _decodeSwapExactAmountInOnUniV3Data, about to decode");
+        UniswapV3Data memory _uniswapV3Data = abi.decode(_data, (UniswapV3Data));
+        return (_uniswapV3Data.srcToken, _uniswapV3Data.destToken, _uniswapV3Data.fromAmount, _uniswapV3Data.toAmount);
+    }
+    
+    
+    function _decodeSwapExactAmountInData(bytes calldata _data) internal pure returns(address srcToken, address destToken, uint256 fromAmount, uint256 toAmount) {
         
         console.log("Inside _decodeSwapExactAmountInData, about to decode with SwapExactAmountIn");
         address executor;
@@ -277,34 +296,11 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         (uint256 partnerAndFee) = abi.decode(_data[256:288], (uint256));
         console.log("Partner And Fee: ");
         console.log(partnerAndFee);
-        return _genericData;
-        // (uint96 fee) = abi.decode(_data[256:268], (uint96));
-        // console.log("Fee in Partner and Fee:");
-        // console.log(fee);
-        // (address partner) = abi.decode(_data[268:288], (address));
-        // console.log("Partner in Partner and Fee:");
-        // console.log(partner);
-        // bytes memory partnerAndFee = _data[256:288];
-        // uint96 fee;
-        // address partner;
-        // (fee, partner) = abi.decode(partnerAndFee, (uint96, address));
-        // SwapExactAmountIn memory swapExactAmountIn = abi.decode(_data, (SwapExactAmountIn));
-        // console.log("swapExactAmountIn Struct Decoded ");
-        // console.log("Executor Address: ");
-        // console.log(swapExactAmountIn.executor);
-        // console.log("Partner And Fee Together as Int:");
-        // console.log(swapExactAmountIn.partnerAndFee);
-        // bytes memory permit = abi.encodePacked(swapExactAmountIn.permit);
-        // console.logBytes(permit);
-        // console.log("Executor Data: ");
-        // bytes memory executorData = abi.encodePacked(swapExactAmountIn.executorData);
-        // console.logBytes(executorData);
-        // console.log("Generic Data Being Sent to Another Internal Function! ");
-        // _decodeGenericData(abi.encode(swapExactAmountIn.swapData));
-
+        return (_genericData.srcToken, _genericData.destToken, _genericData.fromAmount, _genericData.toAmount);
+        
     }
 
-    function _decodeGenericData(bytes memory _data) internal returns(GenericData memory) {
+    function _decodeGenericData(bytes memory _data) internal pure returns(GenericData memory) {
         GenericData memory genericData = abi.decode(_data, (GenericData));
         console.log("genericData Struct Decoded ");
         console.log("Source Token: ");
