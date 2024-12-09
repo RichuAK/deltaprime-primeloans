@@ -32,6 +32,14 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     ///@notice selectors for paraSwapV6 data decoding
     bytes4 private constant SWAP_EXACT_AMOUNT_IN_SELECTOR = 0xe3ead59e;
     bytes4 private constant SWAP_EXACT_AMOUNT_IN_ON_UNI_V3_SELECTOR = 0x876a02f6;
+
+    /// @notice executor addresses returned by ParaSwap API
+    /// https://api.paraswap.io/adapters/contract-takers?network=43114
+    address private constant EXECUTOR_1 = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
+    address private constant EXECUTOR_2 = 0x6A000F20005980200259B80c5102003040001068;
+    address private constant EXECUTOR_3 = 0x000010036C0190E009a000d0fc3541100A07380A;
+    address private constant EXECUTOR_4 = 0x00C600b30fb0400701010F4b080409018B9006E0;
+    address private constant EXECUTOR_5 = 0xe009F00e200A090090fC70e02d70B232000c0802;
     
     struct SwapTokensDetails {
         bytes32 tokenSoldSymbol;
@@ -216,11 +224,15 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 toTokenAmount;
         address fromTokenAddress;
         address toTokenAddress;
+        // bool isRightExecutor;
         if(selector == SWAP_EXACT_AMOUNT_IN_SELECTOR){
+            address executorAddress;
             console.log("Got SwapExactAmountIn Selector!");
             console.log("Data length: ");
             console.log(data.length);
-            (fromTokenAddress, toTokenAddress, fromTokenAmount, toTokenAmount) = _decodeSwapExactAmountInData(data);
+            (executorAddress, fromTokenAddress, toTokenAddress, fromTokenAmount, toTokenAmount) = _decodeSwapExactAmountInData(data);
+            // isRightExecutor = _checkExecutorAddress(executorAddress);
+            require(_checkExecutorAddress(executorAddress), "Executor address is wrong");
         } else if(selector == SWAP_EXACT_AMOUNT_IN_ON_UNI_V3_SELECTOR){
             console.log("Got SwapExactAmountInOnUniV3 Selector!");
             console.log("Data length: ");
@@ -282,7 +294,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     }
     
     
-    function _decodeSwapExactAmountInData(bytes calldata _data) internal pure returns(address srcToken, address destToken, uint256 fromAmount, uint256 toAmount) {
+    function _decodeSwapExactAmountInData(bytes calldata _data) internal pure returns(address executorAddress, address srcToken, address destToken, uint256 fromAmount, uint256 toAmount) {
         
         console.log("Inside _decodeSwapExactAmountInData, about to decode with SwapExactAmountIn");
         address executor;
@@ -296,7 +308,7 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         (uint256 partnerAndFee) = abi.decode(_data[256:288], (uint256));
         console.log("Partner And Fee: ");
         console.log(partnerAndFee);
-        return (_genericData.srcToken, _genericData.destToken, _genericData.fromAmount, _genericData.toAmount);
+        return (executor, _genericData.srcToken, _genericData.destToken, _genericData.fromAmount, _genericData.toAmount);
         
     }
 
@@ -319,6 +331,16 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         console.log("Beneficiary: ");
         console.log(genericData.beneficiary);
         return genericData;
+    }
+
+    function _checkExecutorAddress(address _executorAddress) internal pure returns(bool) {
+        console.log("Inside _checkExecutorAddress");
+        if (_executorAddress == EXECUTOR_3) return true;  //most likely executor, checks first
+        if (_executorAddress == EXECUTOR_2) return true;
+        if (_executorAddress == EXECUTOR_4) return true;
+        if (_executorAddress == EXECUTOR_5) return true;
+        if (_executorAddress == EXECUTOR_1) return true;
+        return false;
     }
 
 
