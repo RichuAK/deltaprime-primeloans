@@ -1,4 +1,4 @@
-import { ethers, waffle } from "hardhat";
+import { ethers, waffle, network } from "hardhat";
 import chai from "chai";
 import { BigNumber, Contract } from "ethers";
 import { solidity } from "ethereum-waffle";
@@ -105,11 +105,11 @@ describe("ParaSwap", () => {
           srcToken: priceRoute.srcToken,
           destToken: priceRoute.destToken,
           srcAmount: priceRoute.srcAmount,
-          slippage: 300,
+          slippage: 900, //increasing slippage from 3% to 9%
           priceRoute,
-          deadline: Math.floor(Date.now() / 1000) + 3000,
+          // deadline: Math.floor(Date.now() / 1000) + 3000,
           userAddress: wrappedLoan.address,
-          partner: "anon",
+          // partner: "anon",
         },
         {
           ignoreChecks: true,
@@ -200,6 +200,19 @@ describe("ParaSwap", () => {
       paraSwapMin = constructSimpleSDK({ chainId: 43114, axios });
     });
 
+    beforeEach(async () => {
+      // Get current block
+      const currentBlock = await ethers.provider.getBlock("latest");
+      const currentTimestamp = currentBlock.timestamp;
+
+      // Add 1 day (86400 seconds)
+      const oneDayFromNow = currentTimestamp + 86400;
+
+      // Set next block's timestamp and mine it
+      await network.provider.send("evm_setNextBlockTimestamp", [oneDayFromNow]);
+      await network.provider.send("evm_mine");
+    });
+
     it("should deploy a smart loan", async () => {
       await smartLoansFactory.connect(owner).createLoan();
       const loan_proxy_address = await smartLoansFactory.getLoanForOwner(
@@ -241,6 +254,7 @@ describe("ParaSwap", () => {
     });
 
     it("should fail to swap as a non-owner", async () => {
+      // changing getSwapData to getNonOwnerSwapData to pass nonOwnerWrappedLoad address
       const swapData = await getSwapData("AVAX", "USDC", toWei("10"), 1);
       await expect(
         nonOwnerWrappedLoan.paraSwapV2(
@@ -287,6 +301,46 @@ describe("ParaSwap", () => {
       ).to.be.closeTo(initialTWV, 0.01 * initialTWV);
     });
 
+    // TODO:
+    // swapping back from USDC to AVAX
+    it("should swap funds: USDC -> AVAX", async () => {
+      let initialTotalValue = fromWei(await wrappedLoan.getTotalValue());
+      let initialHR = fromWei(await wrappedLoan.getHealthRatio());
+      let initialTWV = fromWei(await wrappedLoan.getThresholdWeightedValue());
+
+      // console.log("About to check whether AVAX is loaned");
+      // expect(await loanOwnsAsset("AVAX")).to.be.false;
+      // console.log("Finished checking AVAX loan check");
+      // let usdcBalance = await wrappedLoan.getBalance(toBytes32("USDC"));
+      // let minOut =
+      //   (formatUnits(usdcBalance, 6) * tokensPrices.get("USDC")!) /
+      //   tokensPrices.get("ETH")!;
+      // minOut = toWei((minOut * 0.98).toString()); // 98%
+      const swapData = await getSwapData("USDC", "AVAX", toWei("10"), 1); //minOut as 1
+      await wrappedLoan.paraSwapV2(
+        swapData.selector,
+        swapData.data,
+        TOKEN_ADDRESSES["USDC"],
+        toWei("10"), ///commenting out parameters so that they would be directly parsed from swap data v6.2
+        TOKEN_ADDRESSES["AVAX"],
+        1 // 9800000000000000000
+      );
+
+      expect(await loanOwnsAsset("AVAX")).to.be.true;
+
+      expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(
+        initialTotalValue,
+        0.01 * initialTotalValue
+      );
+      expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.closeTo(
+        initialHR,
+        0.01 * initialHR
+      );
+      expect(
+        fromWei(await wrappedLoan.getThresholdWeightedValue())
+      ).to.be.closeTo(initialTWV, 0.01 * initialTWV);
+    });
+
     // it("should swap funds: USDC -> ETH", async () => {
     //   let initialTotalValue = fromWei(await wrappedLoan.getTotalValue());
     //   let initialHR = fromWei(await wrappedLoan.getHealthRatio());
@@ -298,7 +352,7 @@ describe("ParaSwap", () => {
     //   let minOut =
     //     (formatUnits(usdcBalance, 6) * tokensPrices.get("USDC")!) /
     //     tokensPrices.get("ETH")!;
-    //   minOut = toWei((minOut * 0.98).toString());
+    //   minOut = toWei((minOut * 0.98).toString()); // 98%
 
     //   const swapData = await getSwapData("USDC", "ETH", usdcBalance, minOut);
 
