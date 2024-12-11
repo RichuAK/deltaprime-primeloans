@@ -224,15 +224,15 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         uint256 toTokenAmount;
         address fromTokenAddress;
         address toTokenAddress;
-        // bool isRightExecutor;
         if(selector == SWAP_EXACT_AMOUNT_IN_SELECTOR){
             address executorAddress;
+            bool isRightExecutor;
             console.log("Got SwapExactAmountIn Selector!");
             console.log("Data length: ");
             console.log(data.length);
             (executorAddress, fromTokenAddress, toTokenAddress, fromTokenAmount, toTokenAmount) = _decodeSwapExactAmountInData(data);
-            // isRightExecutor = _checkExecutorAddress(executorAddress);
-            require(_checkExecutorAddress(executorAddress), "Executor address is wrong");
+            isRightExecutor = _checkExecutorAddress(executorAddress);
+            require(isRightExecutor, "Executor address is wrong");
         } else if(selector == SWAP_EXACT_AMOUNT_IN_ON_UNI_V3_SELECTOR){
             console.log("Got SwapExactAmountInOnUniV3 Selector!");
             console.log("Data length: ");
@@ -290,6 +290,14 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     function _decodeSwapExactAmountInOnUniV3Data(bytes calldata _data) internal pure returns(address srcToken, address destToken, uint256 fromAmount, uint256 toAmount) {
         console.log("Inside _decodeSwapExactAmountInOnUniV3Data, about to decode");
         UniswapV3Data memory _uniswapV3Data = abi.decode(_data, (UniswapV3Data));
+        console.log("Src Token: ");
+        console.log(_uniswapV3Data.srcToken);
+        console.log("Dest Token: ");
+        console.log(_uniswapV3Data.destToken);
+        console.log("From Amount: ");
+        console.log(_uniswapV3Data.fromAmount);
+        console.log("To Amount: ");
+        console.log(_uniswapV3Data.toAmount);
         return (_uniswapV3Data.srcToken, _uniswapV3Data.destToken, _uniswapV3Data.fromAmount, _uniswapV3Data.toAmount);
     }
     
