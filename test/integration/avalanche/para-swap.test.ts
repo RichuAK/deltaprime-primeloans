@@ -90,11 +90,11 @@ describe("ParaSwap", () => {
         /// forcing API to always give a multiSwap route. For testing multiSwap swapData dea
         // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L74
         // excludeContractMethods: ["swapExactAmountIn", "swapExactAmountInOnUniswapV3"],  swapExactAmountIn, uniV3 v6.2: swapExactAmountInOnUniswapV3
-        includeContractMethods: [
-          "swapExactAmountIn",
-          "swapExactAmountInOnUniswapV3",
-        ],
-        // includeContractMethods: "swapExactAmountIn",
+        // includeContractMethods: [
+        //   "swapExactAmountIn",
+        //   "swapExactAmountInOnUniswapV3",
+        // ],
+        includeContractMethods: "swapExactAmountIn",
         // version specification
         // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L129
         version: 6.2,
@@ -117,6 +117,58 @@ describe("ParaSwap", () => {
       );
       const swapData = parseParaSwapRouteData(txParams);
       return swapData;
+    };
+
+    /// @dev dividing the amount into portions. Not used as of now
+    const getSwapDataWithPortions = async (
+      srcToken: keyof typeof TOKEN_ADDRESSES,
+      destToken: keyof typeof TOKEN_ADDRESSES,
+      srcAmount: any,
+      destAmount: any
+    ) => {
+      const portions = 3;
+      const portionAmount = BigNumber.from(srcAmount).div(portions);
+      try {
+        const priceRoute = await paraSwapMin.swap.getRate({
+          srcToken: TOKEN_ADDRESSES[srcToken],
+          destToken: TOKEN_ADDRESSES[destToken],
+          amount: portionAmount.toString(), // changing from srcAmount to portionAmount
+          userAddress: wrappedLoan.address,
+          side: SwapSide.SELL,
+          /// forcing API to always give a multiSwap route. For testing multiSwap swapData dea
+          // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L74
+          // excludeContractMethods: ["swapExactAmountIn", "swapExactAmountInOnUniswapV3"],  swapExactAmountIn, uniV3 v6.2: swapExactAmountInOnUniswapV3
+          includeContractMethods: [
+            "swapExactAmountIn",
+            "swapExactAmountInOnUniswapV3",
+          ],
+          // includeContractMethods: "swapExactAmountIn",
+          // version specification
+          // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L129
+          version: 6.2,
+          // excludeDEXS: "UniswapV3",
+        });
+        const txParams = await paraSwapMin.swap.buildTx(
+          {
+            srcToken: priceRoute.srcToken,
+            destToken: priceRoute.destToken,
+            srcAmount: priceRoute.srcAmount,
+            slippage: 900, //increasing slippage from 3% to 9%
+            priceRoute,
+            // deadline: Math.floor(Date.now() / 1000) + 3000,
+            userAddress: wrappedLoan.address,
+            // partner: "anon",
+          },
+          {
+            ignoreChecks: true,
+          }
+        );
+        const swapData = parseParaSwapRouteData(txParams);
+        return swapData;
+      } catch (error) {
+        console.log("Error in getting swapdata:", error);
+        throw error;
+      }
     };
 
     before("deploy factory and pool", async () => {
@@ -311,12 +363,12 @@ describe("ParaSwap", () => {
       // console.log("About to check whether AVAX is loaned");
       // expect(await loanOwnsAsset("AVAX")).to.be.false;
       // console.log("Finished checking AVAX loan check");
-      // let usdcBalance = await wrappedLoan.getBalance(toBytes32("USDC"));
+      let usdcBalance = await wrappedLoan.getBalance(toBytes32("USDC"));
       // let minOut =
       //   (formatUnits(usdcBalance, 6) * tokensPrices.get("USDC")!) /
       //   tokensPrices.get("ETH")!;
       // minOut = toWei((minOut * 0.98).toString()); // 98%
-      const swapData = await getSwapData("USDC", "AVAX", toWei("10"), 1); //minOut as 1
+      const swapData = await getSwapData("USDC", "AVAX", usdcBalance, 1); //minOut as 98% of the original AVAX value
       await wrappedLoan.paraSwapV2(
         swapData.selector,
         swapData.data,
