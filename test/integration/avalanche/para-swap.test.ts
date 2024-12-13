@@ -90,11 +90,11 @@ describe("ParaSwap", () => {
         /// forcing API to always give a multiSwap route. For testing multiSwap swapData dea
         // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L74
         // excludeContractMethods: ["swapExactAmountIn", "swapExactAmountInOnUniswapV3"],  swapExactAmountIn, uniV3 v6.2: swapExactAmountInOnUniswapV3
-        // includeContractMethods: [
-        //   "swapExactAmountIn",
-        //   "swapExactAmountInOnUniswapV3",
-        // ],
-        includeContractMethods: "swapExactAmountIn",
+        includeContractMethods: [
+          "swapExactAmountIn",
+          "swapExactAmountInOnUniswapV3",
+        ],
+        // includeContractMethods: "swapExactAmountIn",
         // version specification
         // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L129
         version: 6.2,
@@ -105,7 +105,7 @@ describe("ParaSwap", () => {
           srcToken: priceRoute.srcToken,
           destToken: priceRoute.destToken,
           srcAmount: priceRoute.srcAmount,
-          slippage: 900, //increasing slippage from 3% to 9%
+          slippage: 300, //increasing slippage from 3% to 9%
           priceRoute,
           // deadline: Math.floor(Date.now() / 1000) + 3000,
           userAddress: wrappedLoan.address,
@@ -117,58 +117,6 @@ describe("ParaSwap", () => {
       );
       const swapData = parseParaSwapRouteData(txParams);
       return swapData;
-    };
-
-    /// @dev dividing the amount into portions. Not used as of now
-    const getSwapDataWithPortions = async (
-      srcToken: keyof typeof TOKEN_ADDRESSES,
-      destToken: keyof typeof TOKEN_ADDRESSES,
-      srcAmount: any,
-      destAmount: any
-    ) => {
-      const portions = 3;
-      const portionAmount = BigNumber.from(srcAmount).div(portions);
-      try {
-        const priceRoute = await paraSwapMin.swap.getRate({
-          srcToken: TOKEN_ADDRESSES[srcToken],
-          destToken: TOKEN_ADDRESSES[destToken],
-          amount: portionAmount.toString(), // changing from srcAmount to portionAmount
-          userAddress: wrappedLoan.address,
-          side: SwapSide.SELL,
-          /// forcing API to always give a multiSwap route. For testing multiSwap swapData dea
-          // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L74
-          // excludeContractMethods: ["swapExactAmountIn", "swapExactAmountInOnUniswapV3"],  swapExactAmountIn, uniV3 v6.2: swapExactAmountInOnUniswapV3
-          includeContractMethods: [
-            "swapExactAmountIn",
-            "swapExactAmountInOnUniswapV3",
-          ],
-          // includeContractMethods: "swapExactAmountIn",
-          // version specification
-          // https://github.com/paraswap/paraswap-sdk/blob/17c2c2162fac8a5cb18aaa9588c44c0c6545f8f7/src/methods/swap/rates.ts#L129
-          version: 6.2,
-          // excludeDEXS: "UniswapV3",
-        });
-        const txParams = await paraSwapMin.swap.buildTx(
-          {
-            srcToken: priceRoute.srcToken,
-            destToken: priceRoute.destToken,
-            srcAmount: priceRoute.srcAmount,
-            slippage: 900, //increasing slippage from 3% to 9%
-            priceRoute,
-            // deadline: Math.floor(Date.now() / 1000) + 3000,
-            userAddress: wrappedLoan.address,
-            // partner: "anon",
-          },
-          {
-            ignoreChecks: true,
-          }
-        );
-        const swapData = parseParaSwapRouteData(txParams);
-        return swapData;
-      } catch (error) {
-        console.log("Error in getting swapdata:", error);
-        throw error;
-      }
     };
 
     before("deploy factory and pool", async () => {
@@ -329,6 +277,7 @@ describe("ParaSwap", () => {
 
       let minOut = parseUnits((tokensPrices.get("AVAX")! * 9.8).toFixed(6), 6);
       const swapData = await getSwapData("AVAX", "USDC", toWei("10"), minOut);
+      console.log("MinOut for AVAX -> USDC: ", minOut);
       await wrappedLoan.paraSwapV2(
         swapData.selector,
         swapData.data,
@@ -353,22 +302,23 @@ describe("ParaSwap", () => {
       ).to.be.closeTo(initialTWV, 0.01 * initialTWV);
     });
 
-    // TODO:
     // swapping back from USDC to AVAX
     it("should swap funds: USDC -> AVAX", async () => {
       let initialTotalValue = fromWei(await wrappedLoan.getTotalValue());
       let initialHR = fromWei(await wrappedLoan.getHealthRatio());
       let initialTWV = fromWei(await wrappedLoan.getThresholdWeightedValue());
 
+      // TODO: this check fails, why?
       // console.log("About to check whether AVAX is loaned");
       // expect(await loanOwnsAsset("AVAX")).to.be.false;
       // console.log("Finished checking AVAX loan check");
       let usdcBalance = await wrappedLoan.getBalance(toBytes32("USDC"));
-      // let minOut =
-      //   (formatUnits(usdcBalance, 6) * tokensPrices.get("USDC")!) /
-      //   tokensPrices.get("ETH")!;
-      // minOut = toWei((minOut * 0.98).toString()); // 98%
-      const swapData = await getSwapData("USDC", "AVAX", usdcBalance, 1); //minOut as 98% of the original AVAX value
+      let minOut =
+        (formatUnits(usdcBalance, 6) * tokensPrices.get("USDC")!) /
+        tokensPrices.get("AVAX")!;
+      minOut = toWei((minOut * 0.98).toString()); // 98%, or 2% slippage
+      console.log("MinOut for USDC -> AVAX: ", minOut);
+      const swapData = await getSwapData("USDC", "AVAX", usdcBalance, minOut); //minOut as 98% of the original AVAX value
       await wrappedLoan.paraSwapV2(
         swapData.selector,
         swapData.data,
@@ -391,6 +341,88 @@ describe("ParaSwap", () => {
       expect(
         fromWei(await wrappedLoan.getThresholdWeightedValue())
       ).to.be.closeTo(initialTWV, 0.01 * initialTWV);
+    });
+
+    it("should swap funds: AVAX -> ETH", async () => {
+      let initialTotalValue = fromWei(await wrappedLoan.getTotalValue());
+      let initialHR = fromWei(await wrappedLoan.getHealthRatio());
+      let initialTWV = fromWei(await wrappedLoan.getThresholdWeightedValue());
+
+      expect(await loanOwnsAsset("ETH")).to.be.false;
+
+      let AVAXBalance = await wrappedLoan.getBalance(toBytes32("AVAX"));
+      console.log("AVAXBalance before AVAX -> ETH: ", AVAXBalance.toString());
+
+      let minOut = parseUnits(
+        (
+          (tokensPrices.get("AVAX")! / tokensPrices.get("ETH")!) *
+          9.8
+        ).toString(),
+        18
+      );
+      const swapData = await getSwapData("AVAX", "ETH", toWei("10"), minOut);
+      console.log("MinOut for AVAX -> ETH: ", minOut);
+      await wrappedLoan.paraSwapV2(
+        swapData.selector,
+        swapData.data,
+        TOKEN_ADDRESSES["AVAX"],
+        toWei("10"), ///commenting out parameters so that they would be directly parsed from swap data v6.2
+        TOKEN_ADDRESSES["ETH"],
+        minOut
+      );
+
+      expect(await loanOwnsAsset("ETH")).to.be.true;
+
+      expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(
+        initialTotalValue,
+        0.01 * initialTotalValue
+      );
+      expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.closeTo(
+        initialHR,
+        0.01 * initialHR
+      );
+      expect(
+        fromWei(await wrappedLoan.getThresholdWeightedValue())
+      ).to.be.closeTo(initialTWV, 0.01 * initialTWV);
+    });
+
+    it("should swap funds: ETH -> USDC", async () => {
+      let initialTotalValue = fromWei(await wrappedLoan.getTotalValue());
+      let initialHR = fromWei(await wrappedLoan.getHealthRatio());
+      let initialTWV = fromWei(await wrappedLoan.getThresholdWeightedValue());
+
+      // TODO
+      // expect(await loanOwnsAsset("USDC")).to.be.false;
+
+      let ethBalance = await wrappedLoan.getBalance(toBytes32("ETH"));
+      console.log("ETHBalance before ETH -> USDC: ", ethBalance.toString());
+      // let swapAmount = ethBalance.div(2);
+
+      let minOut: any = formatUnits(ethBalance, 18) * tokensPrices.get("ETH")!;
+      minOut = parseUnits((minOut * 0.98).toFixed(6), 6);
+      const swapData = await getSwapData("ETH", "USDC", ethBalance, minOut);
+      console.log("MinOut for ETH -> USDC: ", minOut);
+
+      await wrappedLoan.paraSwapV2(
+        swapData.selector,
+        swapData.data,
+        TOKEN_ADDRESSES["ETH"], //params from here on out are not required
+        ethBalance,
+        TOKEN_ADDRESSES["USDC"],
+        minOut
+      );
+
+      // expect(await loanOwnsAsset("ETH")).to.be.true;
+      expect(await loanOwnsAsset("USDC")).to.be.true;
+
+      expect(fromWei(await wrappedLoan.getTotalValue())).to.be.closeTo(
+        initialTotalValue,
+        1.0
+      );
+      expect(fromWei(await wrappedLoan.getHealthRatio())).to.be.eq(initialHR);
+      expect(
+        fromWei(await wrappedLoan.getThresholdWeightedValue())
+      ).to.be.closeTo(initialTWV, 1.0);
     });
 
     // it("should swap funds: USDC -> ETH", async () => {
@@ -439,6 +471,7 @@ describe("ParaSwap", () => {
     //   let initialTWV = fromWei(await wrappedLoan.getThresholdWeightedValue());
 
     //   expect(await loanOwnsAsset("USDC")).to.be.false;
+
     //   let ethBalance = await wrappedLoan.getBalance(toBytes32("ETH"));
     //   let swapAmount = ethBalance.div(2);
 
