@@ -19,16 +19,11 @@ import "hardhat/console.sol";
 contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
     using TransferHelper for address;
 
-    address private constant PARA_TRANSFER_PROXY = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
+    // address private constant PARA_TRANSFER_PROXY = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
     ///@dev paraSwap v6.2 router
     address private constant PARA_ROUTER = 0x6A000F20005980200259B80c5102003040001068;
 
     
-    ///@notice selectors for paraSwapV2 data decoding
-    bytes4 private constant DIRECT_UNI_V3_SELECTOR = 0xa6886da9;
-    bytes4 private constant SIMPLESWAP_SELECTOR = 0x54e3f31b;
-    bytes4 private constant MULTISWAP_SELECTOR = 0xa94e78ef;
-
     ///@notice selectors for paraSwapV6 data decoding
     bytes4 private constant SWAP_EXACT_AMOUNT_IN_SELECTOR = 0xe3ead59e;
     bytes4 private constant SWAP_EXACT_AMOUNT_IN_ON_UNI_V3_SELECTOR = 0x876a02f6;
@@ -102,6 +97,14 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         bytes pools;
     }
 
+    /// @notice FullData struct for swapExactAmountInOnUniswapV3
+    /// @dev from the deployed contract https://snowtrace.deth.net/address/0x6a000f20005980200259b80c5102003040001068
+    struct UniswapV3FullData {
+        UniswapV3Data uniData; 
+        uint256 partnerAndFee;
+        bytes permit;
+    }
+
     
     
     function getInitialTokensDetails(
@@ -167,9 +170,9 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         require(minOut > 0, "minOut needs to be > 0");
         require(fromAmount > 0, "Amount of tokens to sell has to be greater than 0");
 
-        address(swapTokensDetails.soldToken).safeApprove(PARA_TRANSFER_PROXY, 0);
+        address(swapTokensDetails.soldToken).safeApprove(PARA_ROUTER, 0);
         address(swapTokensDetails.soldToken).safeApprove(
-            PARA_TRANSFER_PROXY,
+            PARA_ROUTER,
             fromAmount
         );
 
@@ -238,8 +241,10 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
             console.log("Data length: ");
             console.log(data.length);
             (fromTokenAddress, toTokenAddress, fromTokenAmount, toTokenAmount) = _decodeSwapExactAmountInOnUniV3Data(data);
+            _decodePartnerAndFeeForUniFullData(data);
         } else {
             console.log("Not My Selector!");
+            revert("Not A Recommended Selector!");
         }
         SwapTokensDetails memory swapTokensDetails = getInitialTokensDetails(fromTokenAddress, toTokenAddress);
 
@@ -287,6 +292,33 @@ contract ParaSwapFacet is ReentrancyGuardKeccak, SolvencyMethods {
         );
     }
 
+    function _decodePartnerAndFeeForUniFullData(bytes calldata data) internal pure {
+        console.log("Inside _decodePartnerAndFeeForUniFullData");
+        uint256 partnerAndFee;
+        assembly {
+            // Get pointer to UniswapV3Data
+            let uniDataPtr := add(data.offset, 32)
+            // partnerAndFee comes after all UniswapV3Data fields
+            let partnerAndFeePtr := add(uniDataPtr, 256) // (7 fields * 32) + 32 for pools pointer
+            partnerAndFee := mload(partnerAndFeePtr)
+        }
+        console.log("PartnerAndFee From The Assembly Function: ");
+        console.log(partnerAndFee);
+    }
+
+    /// @dev from paraswap's code, copied as is
+    function parsePartnerAndFeeData(uint256 partnerAndFee)
+        internal
+        pure
+        returns (address payable partner, uint256 feeData)
+    {
+        // solhint-disable-next-line no-inline-assembly
+        assembly ("memory-safe") {
+            partner := shr(96, partnerAndFee)
+            feeData := and(partnerAndFee, 0xFFFFFFFFFFFFFFFFFFFFFFFF)
+        }
+    }
+    
     function _decodeSwapExactAmountInOnUniV3Data(bytes calldata _data) internal pure returns(address srcToken, address destToken, uint256 fromAmount, uint256 toAmount) {
         console.log("Inside _decodeSwapExactAmountInOnUniV3Data, about to decode");
         UniswapV3Data memory _uniswapV3Data = abi.decode(_data, (UniswapV3Data));
